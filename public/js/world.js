@@ -59,6 +59,14 @@ const World = {
 
   VILLAGE_X: 1100,
   VILLAGE_Y: 80,
+  SHOP_X: 1120,
+  SHOP_Y: 190,
+  SHOP_W: 180,
+  SHOP_H: 120,
+  SLAUGHTER_X: 1320,
+  SLAUGHTER_Y: 190,
+  SLAUGHTER_W: 180,
+  SLAUGHTER_H: 120,
 
   NPC_NAMES: ['Mikel','Ane','Josu','Leire','Aitor','Amaia','Unai','Nerea'],
   NPC_WANTS: [
@@ -151,12 +159,28 @@ const World = {
       }
     }
 
+    // Enter shop or matadero from the map
+    if (this._pointInZone(p.x, p.y, this.SHOP_X, this.SHOP_Y, this.SHOP_W, this.SHOP_H)) {
+      Toast.show('Entraste a la tienda. Compra semillas y vuelve al corral.', 'success');
+      Game.showSection('tienda');
+      return;
+    }
+    if (this._pointInZone(p.x, p.y, this.SLAUGHTER_X, this.SLAUGHTER_Y, this.SLAUGHTER_W, this.SLAUGHTER_H)) {
+      Toast.show('Entraste al matadero. Atiende al cliente y corta la pieza.', 'success');
+      Game.showSection('matadero');
+      return;
+    }
+
     // Talk to NPC
     const npc = this._nearestNPC(p.x, p.y, 70);
     if (npc) {
       npc.talking = !npc.talking;
       npc.talkTimer = 180;
     }
+  },
+
+  _pointInZone(x, y, zx, zy, zw, zh) {
+    return x >= zx && x <= zx + zw && y >= zy && y <= zy + zh;
   },
 
   // ── Pig factory ───────────────────────────────────────────────────────────
@@ -712,36 +736,40 @@ const World = {
 
     // Village ground
     ctx.fillStyle = '#c8a46e';
-    ctx.fillRect(vx, vy, 480, 500);
+    ctx.fillRect(vx, vy, 520, 520);
 
     // Village sign
     ctx.fillStyle = '#6b3e1c';
-    ctx.fillRect(vx + 180, vy + 10, 120, 40);
+    ctx.fillRect(vx + 200, vy + 10, 120, 40);
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 11px monospace';
-    ctx.fillText('PUEBLO', vx + 200, vy + 35);
+    ctx.fillText('PUEBLO', vx + 260, vy + 35);
+
+    // Shop and matadero buildings
+    this._drawBuilding(this.SHOP_X, this.SHOP_Y, '#f39c12', '#d35400', 'TIENDA');
+    this._drawBuilding(this.SLAUGHTER_X, this.SLAUGHTER_Y, '#c0392b', '#922b21', 'MATADERO');
 
     // Houses
-    this._drawHouse(vx + 20,  vy + 60,  '#8B1A1A', '#5C0000');
-    this._drawHouse(vx + 160, vy + 60,  '#1A5C8B', '#003366');
-    this._drawHouse(vx + 300, vy + 60,  '#2d7a1e', '#1a4a10');
-    this._drawHouse(vx + 80,  vy + 220, '#8B6914', '#5C4400');
-    this._drawHouse(vx + 240, vy + 220, '#8B1A8B', '#5C005C');
+    this._drawHouse(vx + 20,  vy + 300, '#8B6914', '#5C4400');
+    this._drawHouse(vx + 160, vy + 300, '#8B1A8B', '#5C005C');
+    this._drawHouse(vx + 300, vy + 300, '#1A5C8B', '#003366');
+    this._drawHouse(vx + 80,  vy + 180, '#8B1A1A', '#5C0000');
+    this._drawHouse(vx + 240, vy + 180, '#2d7a1e', '#1a4a10');
 
     // Village fence
     ctx.fillStyle = '#8B5e3c';
-    ctx.fillRect(vx, vy, 480, 6);
-    ctx.fillRect(vx, vy + 494, 480, 6);
-    ctx.fillRect(vx, vy, 6, 500);
-    ctx.fillRect(vx + 474, vy, 6, 500);
+    ctx.fillRect(vx - 10, vy, 540, 6);
+    ctx.fillRect(vx - 10, vy + 520, 540, 6);
+    ctx.fillRect(vx - 10, vy, 6, 526);
+    ctx.fillRect(vx + 524, vy, 6, 526);
     ctx.fillStyle = '#6b3e1c';
-    for (let x = vx; x < vx + 480; x += 40) {
+    for (let x = vx - 10; x < vx + 520; x += 40) {
       ctx.fillRect(x - 3, vy - 8, 8, 20);
-      ctx.fillRect(x - 3, vy + 486, 8, 20);
+      ctx.fillRect(x - 3, vy + 518, 8, 20);
     }
   },
 
-  _drawHouse(x, y, wallColor, roofColor) {
+  _drawBuilding(x, y, wallColor, roofColor, label) {
     const ctx = this.ctx;
     // Body
     ctx.fillStyle = wallColor;
@@ -779,270 +807,136 @@ const World = {
       ctx.fillRect(x + size * (0.5 - w/2 + 0.06) + ox * size, y + size * oy, size * (w - 0.12), size * 0.18);
     });
   },
-
+
+
   _drawPigs() { this.pigs.forEach(pig => this._drawPig(pig)); },
   _drawPig(pig) {
-    const ctx = this.ctx; const scale = pig.scale || 1; const flip = pig.dir === 
-'
-left
-'
- ? -1 : 1;
-    ctx.save(); ctx.translate(Math.floor(pig.x), Math.floor(pig.y)); ctx.scale(flip * scale, scale);
-    ctx.fillStyle = 
-'
-rgba(0,0,0,0.18)
-'
-; ctx.beginPath(); ctx.ellipse(0,14,18,6,0,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle = 
-'
-#e08080
-'
-; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(-22,-2,5,0,Math.PI*1.5); ctx.stroke();
-    ctx.fillStyle = pig.caught ? 
-'
-#ffb3b3
-'
- : 
-'
-#f4a0a0
-'
-; ctx.beginPath(); ctx.ellipse(0,0,20,13,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = 
-'
-rgba(255,255,255,0.25)
-'
-; ctx.beginPath(); ctx.ellipse(-4,-5,10,5,-0.3,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = 
-'
-#f4a0a0
-'
-; ctx.beginPath(); ctx.ellipse(22,-3,12,10,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = 
-'
-#e08080
-'
-;
+    const ctx = this.ctx;
+    const scale = pig.scale || 1;
+    const flip = pig.dir === 'left' ? -1 : 1;
+    ctx.save();
+    ctx.translate(Math.floor(pig.x), Math.floor(pig.y));
+    ctx.scale(flip * scale, scale);
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.beginPath(); ctx.ellipse(0,14,18,6,0,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#e08080';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(-22,-2,5,0,Math.PI*1.5); ctx.stroke();
+    ctx.fillStyle = pig.caught ? '#ffb3b3' : '#f4a0a0';
+    ctx.beginPath(); ctx.ellipse(0,0,20,13,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.beginPath(); ctx.ellipse(-4,-5,10,5,-0.3,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#f4a0a0';
+    ctx.beginPath(); ctx.ellipse(22,-3,12,10,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#e08080';
     ctx.beginPath(); ctx.ellipse(16,-12,5,7,-0.4,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(24,-12,4,6,0.3,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(32,-1,7,5,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = 
-'
-#c06060
-'
-;
+    ctx.fillStyle = '#c06060';
     ctx.beginPath(); ctx.ellipse(30,-2,2,1.5,0,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(34,-2,2,1.5,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = 
-'
-#333
-'
-; ctx.beginPath(); ctx.ellipse(20,-7,3,3,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = 
-'
-#fff
-'
-; ctx.beginPath(); ctx.ellipse(21,-8,1.2,1.2,0,0,Math.PI*2); ctx.fill();
-    const legOff = (pig.frame < 2) ? 2 : -2; ctx.fillStyle = 
-'
-#e08080
-'
-;
+    ctx.fillStyle = '#333';
+    ctx.beginPath(); ctx.ellipse(20,-7,3,3,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.ellipse(21,-8,1.2,1.2,0,0,Math.PI*2); ctx.fill();
+    const legOff = (pig.frame < 2) ? 2 : -2;
+    ctx.fillStyle = '#e08080';
     ctx.beginPath(); ctx.ellipse(-10,12+legOff,4,6,0,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(-2,12-legOff,4,6,0,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(8,12+legOff,4,6,0,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(16,12-legOff,4,6,0,0,Math.PI*2); ctx.fill();
     ctx.restore();
-    ctx.save(); ctx.font = 
-'
-8px monospace
-'
-; ctx.textAlign = 
-'
-center
-'
-;
-    const qc = pig.quality === 
-'
-alta
-'
- ? 
-'
-#27ae60
-'
- : pig.quality === 
-'
-media
-'
- ? 
-'
-#f39c12
-'
- : 
-'
-#e74c3c
-'
-;
-    ctx.fillStyle = 
-'
-rgba(0,0,0,0.55)
-'
-; ctx.fillRect(pig.x-22,pig.y-30,44,12);
-    ctx.fillStyle = qc; ctx.fillText(pig.name, pig.x, pig.y-21); ctx.restore();
-    if (pig.eating) { ctx.save(); ctx.font=
-'
-14px serif
-'
-; ctx.textAlign=
-'
-center
-'
-; ctx.fillText(
-'
-*
-'
-,pig.x,pig.y-35); ctx.restore(); }
+    ctx.save();
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'center';
+    const qc = pig.quality === 'alta' ? '#27ae60' : pig.quality === 'media' ? '#f39c12' : '#e74c3c';
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(pig.x-22, pig.y-30, 44, 12);
+    ctx.fillStyle = qc;
+    ctx.fillText(pig.name, pig.x, pig.y-21);
+    ctx.restore();
+    if (pig.eating) {
+      ctx.save();
+      ctx.font = '14px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('*', pig.x, pig.y-35);
+      ctx.restore();
+    }
   },
 
   _drawNPCs() { this.npcs.forEach(npc => this._drawNPC(npc)); },
   _drawNPC(npc) {
-    const ctx = this.ctx; const flip = npc.dir === 
-'
-left
-'
- ? -1 : 1;
+    const ctx = this.ctx;
+    const flip = npc.dir === 'left' ? -1 : 1;
     const wb = npc.moving ? Math.sin(this.time * 0.2) * 2 : 0;
-    ctx.save(); ctx.translate(Math.floor(npc.x), Math.floor(npc.y) + wb); ctx.scale(flip, 1);
-    ctx.fillStyle = 
-'
-rgba(0,0,0,0.15)
-'
-; ctx.beginPath(); ctx.ellipse(0,28,10,4,0,0,Math.PI*2); ctx.fill();
+    ctx.save();
+    ctx.translate(Math.floor(npc.x), Math.floor(npc.y) + wb);
+    ctx.scale(flip, 1);
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.beginPath(); ctx.ellipse(0,28,10,4,0,0,Math.PI*2); ctx.fill();
     const ls = npc.moving ? Math.sin(this.time * 0.25) * 5 : 0;
-    ctx.fillStyle = 
-'
-#4a3020
-'
-; ctx.fillRect(-6,14,5,14+ls); ctx.fillRect(1,14,5,14-ls);
-    ctx.fillStyle = 
-'
-#2a1800
-'
-; ctx.fillRect(-8,26+ls,7,4); ctx.fillRect(-1,26-ls,7,4);
-    ctx.fillStyle = npc.shirtColor || 
-'
-#3498db
-'
-; ctx.fillRect(-8,-2,16,18);
+    ctx.fillStyle = '#4a3020';
+    ctx.fillRect(-6,14,5,14+ls); ctx.fillRect(1,14,5,14-ls);
+    ctx.fillStyle = '#2a1800';
+    ctx.fillRect(-8,26+ls,7,4); ctx.fillRect(-1,26-ls,7,4);
+    ctx.fillStyle = npc.shirtColor || '#3498db';
+    ctx.fillRect(-8,-2,16,18);
     const as = npc.moving ? Math.sin(this.time * 0.25) * 6 : 0;
-    ctx.fillStyle = npc.shirtColor || 
-'
-#3498db
-'
-; ctx.fillRect(-14,-2+as,6,12); ctx.fillRect(8,-2-as,6,12);
-    ctx.fillStyle = npc.skinTone || 
-'
-#f4c4a0
-'
-;
+    ctx.fillStyle = npc.shirtColor || '#3498db';
+    ctx.fillRect(-14,-2+as,6,12); ctx.fillRect(8,-2-as,6,12);
+    ctx.fillStyle = npc.skinTone || '#f4c4a0';
     ctx.beginPath(); ctx.ellipse(-11,10+as,3,3,0,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(11,10-as,3,3,0,0,Math.PI*2); ctx.fill();
     ctx.fillRect(-3,-8,6,8);
     ctx.beginPath(); ctx.ellipse(0,-16,9,10,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = 
-'
-#333
-'
-;
+    ctx.fillStyle = '#333';
     ctx.beginPath(); ctx.ellipse(-3,-17,2,2,0,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(3,-17,2,2,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = 
-'
-#fff
-'
-;
+    ctx.fillStyle = '#fff';
     ctx.beginPath(); ctx.ellipse(-2.5,-17.5,0.8,0.8,0,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(3.5,-17.5,0.8,0.8,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = 
-'
-#c06040
-'
-; ctx.fillRect(-2,-12,4,2);
-    if (npc.hat === 0) { ctx.fillStyle=
-'
-#e74c3c
-'
-; ctx.fillRect(-10,-26,20,6); ctx.fillRect(-8,-32,16,8); ctx.fillRect(-12,-22,6,4); }
-    else if (npc.hat === 1) { ctx.fillStyle=
-'
-#8B5e3c
-'
-; ctx.fillRect(-12,-26,24,5); ctx.fillRect(-7,-34,14,10); ctx.fillStyle=
-'
-#c8a46e
-'
-; ctx.fillRect(-7,-26,14,3); }
-    else { ctx.fillStyle=
-'
-#4a2800
-'
-; ctx.fillRect(-9,-26,18,8); ctx.fillRect(-9,-20,4,4); ctx.fillRect(5,-20,4,4); }
+    ctx.fillStyle = '#c06040';
+    ctx.fillRect(-2,-12,4,2);
+    if (npc.hat === 0) {
+      ctx.fillStyle = '#e74c3c';
+      ctx.fillRect(-10,-26,20,6); ctx.fillRect(-8,-32,16,8); ctx.fillRect(-12,-22,6,4);
+    } else if (npc.hat === 1) {
+      ctx.fillStyle = '#8B5e3c';
+      ctx.fillRect(-12,-26,24,5); ctx.fillRect(-7,-34,14,10);
+      ctx.fillStyle = '#c8a46e';
+      ctx.fillRect(-7,-26,14,3);
+    } else {
+      ctx.fillStyle = '#4a2800';
+      ctx.fillRect(-9,-26,18,8); ctx.fillRect(-9,-20,4,4); ctx.fillRect(5,-20,4,4);
+    }
     ctx.restore();
-    ctx.save(); ctx.font=
-'
-8px monospace
-'
-; ctx.textAlign=
-'
-center
-'
-;
-    ctx.fillStyle=
-'
-rgba(0,0,0,0.55)
-'
-; ctx.fillRect(npc.x-20,npc.y-52,40,12);
-    ctx.fillStyle=
-'
-#fff
-'
-; ctx.fillText(npc.name,npc.x,npc.y-43); ctx.restore();
+    ctx.save();
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(npc.x-20,npc.y-52,40,12);
+    ctx.fillStyle = '#fff';
+    ctx.fillText(npc.name,npc.x,npc.y-43);
+    ctx.restore();
     if (npc.talking) this._drawSpeechBubble(npc.x, npc.y-60, npc.want.label);
   },
   _drawSpeechBubble(x, y, text) {
-    const ctx = this.ctx; const pad = 6;
-    ctx.font = 
-'
-9px monospace
-'
-; const tw = ctx.measureText(text).width;
+    const ctx = this.ctx;
+    const pad = 6;
+    ctx.font = '9px monospace';
+    const tw = ctx.measureText(text).width;
     const bw = tw + pad * 2; const bh = 18;
     ctx.save();
-    ctx.fillStyle = 
-'
-rgba(255,255,255,0.92)
-'
-; ctx.strokeStyle = 
-'
-#333
-'
-; ctx.lineWidth = 1.5;
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1.5;
     ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x-bw/2,y-bh,bw,bh,4); else ctx.rect(x-bw/2,y-bh,bw,bh);
     ctx.fill(); ctx.stroke();
-    ctx.fillStyle = 
-'
-rgba(255,255,255,0.92)
-'
-;
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
     ctx.beginPath(); ctx.moveTo(x-4,y); ctx.lineTo(x+4,y); ctx.lineTo(x,y+8); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = 
-'
-#222
-'
-; ctx.textAlign = 
-'
-center
-'
-; ctx.fillText(text,x,y-5);
+    ctx.fillStyle = '#222';
+    ctx.textAlign = 'center';
+    ctx.fillText(text,x,y-5);
     ctx.restore();
   },
 

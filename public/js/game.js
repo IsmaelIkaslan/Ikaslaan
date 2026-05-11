@@ -34,13 +34,7 @@ const Game = {
     // Nav buttons (inside sections)
     document.querySelectorAll('.nav-btn[data-section]').forEach(btn => {
       btn.addEventListener('click', () => {
-        const section = btn.dataset.section;
-        document.querySelectorAll('.nav-btn[data-section]').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.game-section').forEach(s => s.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(`section-${section}`).classList.add('active');
-        if (section === 'ranking') Game.loadLeaderboard();
-        if (section === 'tienda')  Shop.updateInventory();
+        Game.showSection(btn.dataset.section);
       });
     });
 
@@ -65,6 +59,20 @@ const Game = {
     if (!this.state) return;
     document.getElementById('player-money').textContent = this.state.money.toFixed(0);
     document.getElementById('player-score').textContent = this.state.score;
+  },
+
+  showSection(section) {
+    document.getElementById('world-overlay').classList.add('hidden');
+    document.getElementById('sections-container').classList.remove('hidden');
+    document.querySelectorAll('.nav-btn[data-section]').forEach(b => {
+      b.classList.toggle('active', b.dataset.section === section);
+    });
+    document.querySelectorAll('.game-section').forEach(s => {
+      s.classList.toggle('active', s.id === `section-${section}`);
+    });
+    if (section === 'ranking') this.loadLeaderboard();
+    if (section === 'tienda')  Shop.updateInventory();
+    if (section === 'corral')  Corral.render();
   },
 
   animateBackground() {

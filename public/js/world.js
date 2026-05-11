@@ -653,6 +653,7 @@ const World = {
 
     // Village
     this._drawVillage();
+    this._drawCityMarker();
 
     // Trees scattered around
     this._drawTree(50,  50,  60);
@@ -755,6 +756,39 @@ const World = {
     this._drawBuilding(vx + 60, vy + 120, '#8e44ad', '#6c3483', '');
     this._drawBuilding(vx + 220, vy + 120, '#1abc9c', '#16a085', '');
     this._drawBuilding(vx + 380, vy + 120, '#f1c40f', '#b7950b', '');
+  },
+
+  _drawCityMarker() {
+    const ctx = this.ctx;
+    const vx = this.VILLAGE_X;
+    const vy = this.VILLAGE_Y;
+    const x = vx + 260;
+    const y = vy + 470;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.fillRect(x - 120, y - 26, 240, 32);
+    ctx.strokeStyle = '#c0392b';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(x - 120, y - 26, 240, 32);
+    ctx.fillStyle = '#c0392b';
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('AQUI ESTA LA CIUDAD ->', x, y);
+    ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(x - 40, y - 10);
+    ctx.lineTo(x + 50, y - 10);
+    ctx.lineTo(x + 40, y - 20);
+    ctx.moveTo(x + 50, y - 10);
+    ctx.lineTo(x + 40, y);
+    ctx.stroke();
+    ctx.restore();
+  },
 
     // Houses
     this._drawHouse(vx + 20,  vy + 300, '#8B6914', '#5C4400');

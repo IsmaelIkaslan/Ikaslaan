@@ -57,13 +57,13 @@ const World = {
   CORRAL_W: 380,
   CORRAL_H: 280,
 
-  VILLAGE_X: 1100,
+  VILLAGE_X: 820,
   VILLAGE_Y: 80,
-  SHOP_X: 1120,
+  SHOP_X: 840,
   SHOP_Y: 190,
   SHOP_W: 180,
   SHOP_H: 120,
-  SLAUGHTER_X: 1320,
+  SLAUGHTER_X: 1040,
   SLAUGHTER_Y: 190,
   SLAUGHTER_W: 180,
   SLAUGHTER_H: 120,
@@ -628,9 +628,9 @@ const World = {
 
     // Dirt path from farm to village
     ctx.fillStyle = '#c8a46e';
-    ctx.fillRect(460, 380, 660, 60);
+    ctx.fillRect(460, 380, 580, 60);
     ctx.fillStyle = '#b8944e';
-    for (let x = 460; x < 1120; x += 32) {
+    for (let x = 460; x < 1040; x += 32) {
       ctx.fillRect(x, 380, 16, 60);
     }
 

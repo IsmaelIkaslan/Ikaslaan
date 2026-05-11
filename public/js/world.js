@@ -57,13 +57,13 @@ const World = {
   CORRAL_W: 380,
   CORRAL_H: 280,
 
-  VILLAGE_X: 820,
+  VILLAGE_X: 520,
   VILLAGE_Y: 80,
-  SHOP_X: 840,
+  SHOP_X: 540,
   SHOP_Y: 190,
   SHOP_W: 180,
   SHOP_H: 120,
-  SLAUGHTER_X: 1040,
+  SLAUGHTER_X: 760,
   SLAUGHTER_Y: 190,
   SLAUGHTER_W: 180,
   SLAUGHTER_H: 120,
@@ -628,9 +628,9 @@ const World = {
 
     // Dirt path from farm to village
     ctx.fillStyle = '#c8a46e';
-    ctx.fillRect(460, 380, 580, 60);
+    ctx.fillRect(420, 380, 500, 60);
     ctx.fillStyle = '#b8944e';
-    for (let x = 460; x < 1040; x += 32) {
+    for (let x = 420; x < 940; x += 32) {
       ctx.fillRect(x, 380, 16, 60);
     }
 
@@ -735,27 +735,33 @@ const World = {
     const vx = this.VILLAGE_X;
     const vy = this.VILLAGE_Y;
 
-    // Village ground
-    ctx.fillStyle = '#c8a46e';
-    ctx.fillRect(vx, vy, 520, 520);
+    // Village ground with a distinct city color
+    ctx.fillStyle = '#8a9a7a';
+    ctx.fillRect(vx - 20, vy - 20, 620, 560);
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    for (let x = vx - 10; x < vx + 560; x += 40) {
+      ctx.fillRect(x, vy - 10, 24, 520);
+    }
 
     // Village sign
     ctx.fillStyle = '#6b3e1c';
-    ctx.fillRect(vx + 180, vy + 10, 160, 44);
+    ctx.fillRect(vx + 140, vy + 8, 240, 48);
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 16px monospace';
+    ctx.font = 'bold 18px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('PUEBLO', vx + 260, vy + 38);
+    ctx.fillText('PUEBLO / CIUDAD', vx + 260, vy + 38);
     ctx.font = '12px monospace';
-    ctx.fillText('CIUDAD', vx + 260, vy + 55);
+    ctx.fillText('VEN AL LADO DEL CORRAL', vx + 260, vy + 56);
     ctx.textAlign = 'start';
 
     // City buildings for clearer visual
     this._drawBuilding(this.SHOP_X, this.SHOP_Y, '#f39c12', '#d35400', 'TIENDA');
     this._drawBuilding(this.SLAUGHTER_X, this.SLAUGHTER_Y, '#c0392b', '#922b21', 'MATADERO');
-    this._drawBuilding(vx + 60, vy + 120, '#8e44ad', '#6c3483', '');
-    this._drawBuilding(vx + 220, vy + 120, '#1abc9c', '#16a085', '');
-    this._drawBuilding(vx + 380, vy + 120, '#f1c40f', '#b7950b', '');
+    this._drawBuilding(vx + 20, vy + 160, '#8e44ad', '#6c3483', 'MERCADO');
+    this._drawBuilding(vx + 220, vy + 160, '#1abc9c', '#16a085', 'CASA');
+    this._drawBuilding(vx + 20, vy + 320, '#f1c40f', '#b7950b', 'ALMACÉN');
+    this._drawBuilding(vx + 220, vy + 320, '#d35400', '#a04020', 'POSTAL');
+  }
   },
 
   _drawCityMarker() {

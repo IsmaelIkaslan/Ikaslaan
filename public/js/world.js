@@ -740,14 +740,21 @@ const World = {
 
     // Village sign
     ctx.fillStyle = '#6b3e1c';
-    ctx.fillRect(vx + 200, vy + 10, 120, 40);
+    ctx.fillRect(vx + 180, vy + 10, 160, 44);
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 11px monospace';
-    ctx.fillText('PUEBLO', vx + 260, vy + 35);
+    ctx.font = 'bold 16px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('PUEBLO', vx + 260, vy + 38);
+    ctx.font = '12px monospace';
+    ctx.fillText('CIUDAD', vx + 260, vy + 55);
+    ctx.textAlign = 'start';
 
-    // Shop and matadero buildings
+    // City buildings for clearer visual
     this._drawBuilding(this.SHOP_X, this.SHOP_Y, '#f39c12', '#d35400', 'TIENDA');
     this._drawBuilding(this.SLAUGHTER_X, this.SLAUGHTER_Y, '#c0392b', '#922b21', 'MATADERO');
+    this._drawBuilding(vx + 60, vy + 120, '#8e44ad', '#6c3483', '');
+    this._drawBuilding(vx + 220, vy + 120, '#1abc9c', '#16a085', '');
+    this._drawBuilding(vx + 380, vy + 120, '#f1c40f', '#b7950b', '');
 
     // Houses
     this._drawHouse(vx + 20,  vy + 300, '#8B6914', '#5C4400');
@@ -1002,12 +1009,13 @@ const World = {
     const ctx = this.ctx;
     const p = this.player;
     ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,0.55)';
-    ctx.fillRect(p.x - 64, p.y + 30, 128, 22);
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.fillRect(p.x - 86, p.y + 28, 172, 26);
     ctx.fillStyle = '#fff';
     ctx.font = '10px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('WASD / Flechas para mover', p.x, p.y + 44);
+    const hint = p.x < 900 ? 'Mueve a la derecha para encontrar la ciudad' : 'Entra a la tienda o al matadero con E';
+    ctx.fillText(hint, p.x, p.y + 44);
     ctx.restore();
   },
 

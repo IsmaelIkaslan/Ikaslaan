@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Del Corral al Corte 🐷</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ===== PANTALLA LOGIN ===== -->
+  <div id="screen-auth" class="screen active">
+    <canvas id="bg-canvas"></canvas>
+    <div class="auth-container">
+      <div class="auth-logo">
+        <span class="logo-icon">🐷</span>
+        <h1>Del Corral al Corte</h1>
+        <p>La granja más auténtica</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="tab-btn active" data-tab="login">Entrar</button>
+        <button class="tab-btn" data-tab="register">Registrarse</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="form-login" class="auth-form active">
+        <div class="input-group">
+          <label>👤 Nombre de carnicero</label>
+          <input type="text" id="login-username" placeholder="Tu nombre..." autocomplete="username" />
+        </div>
+        <div class="input-group">
+          <label>🔒 Contraseña</label>
+          <input type="password" id="login-password" placeholder="Tu contraseña..." autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn-primary">¡Entrar a la granja!</button>
+        <p id="login-error" class="form-error"></p>
+      </form>
+
+      <!-- Register Form -->
+      <form id="form-register" class="auth-form">
+        <div class="input-group">
+          <label>👤 Elige tu nombre</label>
+          <input type="text" id="reg-username" placeholder="Nombre del carnicero..." autocomplete="username" />
+        </div>
+        <div class="input-group">
+          <label>🔒 Crea tu contraseña</label>
+          <input type="password" id="reg-password" placeholder="Contraseña..." autocomplete="new-password" />
+        </div>
+        <button type="submit" class="btn-primary">¡Crear mi granja!</button>
+        <p id="reg-error" class="form-error"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== PANTALLA PRINCIPAL (GRANJA) ===== -->
+  <div id="screen-game" class="screen">
+
+    <!-- HUD superior -->
+    <div id="hud">
+      <div class="hud-left">
+        <span id="hud-player">🧑‍🌾 <span id="player-name">-</span></span>
+        <span id="hud-score">⭐ <span id="player-score">0</span></span>
+      </div>
+      <div class="hud-center">
+        <h2>Del Corral al Corte</h2>
+      </div>
+      <div class="hud-right">
+        <span id="hud-money">💶 <span id="player-money">150</span>€</span>
+        <button id="btn-logout" class="btn-small">Salir</button>
+      </div>
+    </div>
+
+    <!-- ===== MUNDO TOP-DOWN ===== -->
+    <div id="world-overlay" style="position:relative;flex:1;overflow:hidden;">
+      <canvas id="world-canvas" style="display:block;width:100%;height:100%;image-rendering:pixelated;cursor:default;"></canvas>
+    </div>
+
+    <!-- ===== SECCIONES (se muestran al entrar en edificio) ===== -->
+    <div id="sections-container" class="hidden" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+    <!-- Menú de navegación -->
+    <div id="nav-menu">
+      <button class="nav-btn" id="btn-back-world">🗺️ Volver al mapa</button>
+      <button class="nav-btn active" data-section="corral">🐷 Corral</button>
+      <button class="nav-btn" data-section="tienda">🌱 Tienda</button>
+      <button class="nav-btn" data-section="matadero">🔪 Matadero</button>
+      <button class="nav-btn" data-section="ranking">🏆 Ranking</button>
+    </div>
+
+    <!-- ===== SECCIÓN CORRAL ===== -->
+    <div id="section-corral" class="game-section active">
+      <div class="section-header">
+        <h2>🐷 Mi Corral</h2>
+        <p>Cuida a tus cerdos y dales de comer para que crezcan</p>
+      </div>
+      <div id="pig-list" class="pig-grid"></div>
+
+      <!-- Panel de alimentación -->
+      <div id="feed-panel" class="panel hidden">
+        <h3>Dar de comer a <span id="feed-pig-name"></span></h3>
+        <div class="feed-options">
+          <button class="feed-btn" data-food="acorn">
+            🌰 Bellota<br><small>+3kg | Alta calidad</small>
+          </button>
+          <button class="feed-btn" data-food="carrot">
+            🥕 Zanahoria<br><small>+2kg | Media calidad</small>
+          </button>
+          <button class="feed-btn" data-food="wheat">
+            🌾 Trigo<br><small>+1kg | Baja calidad</small>
+          </button>
+        </div>
+        <button id="feed-close" class="btn-secondary">Cerrar</button>
+      </div>
+    </div>
+
+    <!-- ===== SECCIÓN TIENDA ===== -->
+    <div id="section-tienda" class="game-section">
+      <div class="section-header">
+        <h2>🌱 Tienda de Semillas</h2>
+        <p>Compra semillas para alimentar a tus cerdos</p>
+      </div>
+      <div class="shop-grid">
+        <div class="shop-item" data-seed="acorn">
+          <div class="shop-icon">🌰</div>
+          <h3>Semilla de Bellota</h3>
+          <p class="shop-quality quality-high">Alta calidad</p>
+          <p class="shop-desc">El cerdo ibérico de verdad. Mejora la calidad final de la carne.</p>
+          <p class="shop-price">30€ / unidad</p>
+          <div class="shop-controls">
+            <button class="qty-btn" data-action="minus" data-seed="acorn">−</button>
+            <span class="qty-display" id="qty-acorn">1</span>
+            <button class="qty-btn" data-action="plus" data-seed="acorn">+</button>
+          </div>
+          <button class="btn-buy" data-seed="acorn">Comprar</button>
+        </div>
+
+        <div class="shop-item" data-seed="carrot">
+          <div class="shop-icon">🥕</div>
+          <h3>Semilla de Zanahoria</h3>
+          <p class="shop-quality quality-mid">Media calidad</p>
+          <p class="shop-desc">Equilibrada y económica. Buen crecimiento a precio razonable.</p>
+          <p class="shop-price">15€ / unidad</p>
+          <div class="shop-controls">
+            <button class="qty-btn" data-action="minus" data-seed="carrot">−</button>
+            <span class="qty-display" id="qty-carrot">1</span>
+            <button class="qty-btn" data-action="plus" data-seed="carrot">+</button>
+          </div>
+          <button class="btn-buy" data-seed="carrot">Comprar</button>
+        </div>
+
+        <div class="shop-item" data-seed="wheat">
+          <div class="shop-icon">🌾</div>
+          <h3>Semilla de Trigo</h3>
+          <p class="shop-quality quality-low">Baja calidad</p>
+          <p class="shop-desc">Lo más barato. El cerdo crece pero la carne no será la mejor.</p>
+          <p class="shop-price">5€ / unidad</p>
+          <div class="shop-controls">
+            <button class="qty-btn" data-action="minus" data-seed="wheat">−</button>
+            <span class="qty-display" id="qty-wheat">1</span>
+            <button class="qty-btn" data-action="plus" data-seed="wheat">+</button>
+          </div>
+          <button class="btn-buy" data-seed="wheat">Comprar</button>
+        </div>
+      </div>
+
+      <div class="inventory-panel">
+        <h3>📦 Tu inventario</h3>
+        <div id="inventory-display" class="inventory-grid"></div>
+      </div>
+    </div>
+
+    <!-- ===== SECCIÓN MATADERO ===== -->
+    <div id="section-matadero" class="game-section">
+      <div class="section-header">
+        <h2>🔪 Matadero</h2>
+        <p>Aquí llegan los clientes con sus pedidos</p>
+      </div>
+      <div id="matadero-content">
+        <div id="client-area">
+          <div id="no-client" class="info-box">
+            <p>🕐 Esperando cliente...</p>
+            <button id="btn-call-client" class="btn-primary">Llamar cliente</button>
+          </div>
+          <div id="client-order" class="hidden">
+            <div class="client-card">
+              <div class="client-avatar" id="client-avatar">👨‍💼</div>
+              <div class="client-info">
+                <h3 id="client-name">Cliente</h3>
+                <p>Quiere: <strong id="client-request"></strong></p>
+                <p class="client-quality">Calidad mínima: <span id="client-quality"></span></p>
+              </div>
+            </div>
+            <button id="btn-start-slaughter" class="btn-danger">Ir al corral a buscar el cerdo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SECCIÓN RANKING ===== -->
+    <div id="section-ranking" class="game-section">
+      <div class="section-header">
+        <h2>🏆 Ranking de Carniceros</h2>
+        <p>Los mejores del gremio</p>
+      </div>
+      <div id="leaderboard-list" class="leaderboard"></div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toast-container"></div>
+    </div><!-- end sections-container -->
+  </div><!-- end screen-game -->
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/background.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/corral.js"></script>
+  <script src="js/capture.js"></script>
+  <script src="js/slaughter.js"></script>
+  <script src="js/matadero.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

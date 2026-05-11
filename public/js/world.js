@@ -940,3 +940,108 @@ const World = {
     ctx.restore();
   },
 
+  _drawFoodItems() {
+    const ctx = this.ctx;
+    this.foodItems.forEach(food => {
+      const bob = Math.sin(this.time * 0.12 + food.bobOffset) * 4;
+      ctx.save();
+      ctx.translate(food.x, food.y + bob);
+      ctx.fillStyle = '#f5d98a';
+      ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#8b4513';
+      ctx.fillText(food.type === 'acorn' ? '🌰' : food.type === 'carrot' ? '🥕' : '🌾', 0, 4);
+      ctx.restore();
+    });
+  },
+
+  _drawPlayer() {
+    const ctx = this.ctx;
+    const p = this.player;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.fillStyle = '#3a3a3a';
+    ctx.beginPath(); ctx.ellipse(0, 0, 12, 14, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffd1a4';
+    ctx.beginPath(); ctx.ellipse(0, -14, 8, 10, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#2c2c2c';
+    ctx.fillRect(-4, -10, 8, 12);
+    ctx.restore();
+  },
+
+  _drawLasso() {
+    const ctx = this.ctx;
+    const p = this.player;
+    if (this.lasso.active && !this.lasso.throwing && !this.caughtPig) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y - 4, 28, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+    if (this.lasso.throwing && this.lasso.targetPig) {
+      const target = this.lasso.targetPig;
+      const progress = Math.min(1, this.lasso.throwProgress);
+      const lx = p.x + (target.x - p.x) * progress;
+      const ly = p.y + (target.y - p.y) * progress;
+      ctx.save();
+      ctx.strokeStyle = '#f4f4f4';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y - 4);
+      ctx.lineTo(lx, ly - 4);
+      ctx.stroke();
+      ctx.fillStyle = '#f39c12';
+      ctx.beginPath(); ctx.arc(lx, ly - 4, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+  },
+
+  _drawInteractionHints() {
+    const ctx = this.ctx;
+    const p = this.player;
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(p.x - 64, p.y + 30, 128, 22);
+    ctx.fillStyle = '#fff';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('WASD / Flechas para mover', p.x, p.y + 44);
+    ctx.restore();
+  },
+
+  _drawMinimap(W, H) {
+    const ctx = this.ctx;
+    const size = 120;
+    const margin = 16;
+    const miniW = size;
+    const miniH = size * (H / W);
+    const x = W - miniW - margin;
+    const y = margin;
+
+    ctx.save();
+    ctx.globalAlpha = 0.8;
+    ctx.fillStyle = '#1a0a00';
+    ctx.fillRect(x, y, miniW, miniH);
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, miniW, miniH);
+
+    ctx.fillStyle = '#4a8a2e';
+    ctx.fillRect(x + 4, y + 4, miniW - 8, miniH - 8);
+    ctx.fillStyle = '#c8a46e';
+    const shopX = x + 4 + (this.SHOP_X / this.WORLD_W) * (miniW - 8);
+    const shopY = y + 4 + (this.SHOP_Y / this.WORLD_H) * (miniH - 8);
+    ctx.fillRect(shopX - 2, shopY - 2, 8, 8);
+    ctx.fillStyle = '#e74c3c';
+    const slX = x + 4 + (this.SLAUGHTER_X / this.WORLD_W) * (miniW - 8);
+    const slY = y + 4 + (this.SLAUGHTER_Y / this.WORLD_H) * (miniH - 8);
+    ctx.fillRect(slX - 2, slY - 2, 8, 8);
+    ctx.fillStyle = '#f4a0a0';
+    const px = x + 4 + (this.player.x / this.WORLD_W) * (miniW - 8);
+    const py = y + 4 + (this.player.y / this.WORLD_H) * (miniH - 8);
+    ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+

@@ -57,14 +57,14 @@ const World = {
   CORRAL_W: 380,
   CORRAL_H: 280,
 
-  VILLAGE_X: 360,
-  VILLAGE_Y: 80,
-  SHOP_X: 380,
-  SHOP_Y: 190,
+  VILLAGE_X: 620,
+  VILLAGE_Y: 200,
+  SHOP_X: 640,
+  SHOP_Y: 310,
   SHOP_W: 180,
   SHOP_H: 120,
-  SLAUGHTER_X: 600,
-  SLAUGHTER_Y: 190,
+  SLAUGHTER_X: 860,
+  SLAUGHTER_Y: 310,
   SLAUGHTER_W: 180,
   SLAUGHTER_H: 120,
 
@@ -745,13 +745,13 @@ const World = {
 
     // Village sign
     ctx.fillStyle = '#6b3e1c';
-    ctx.fillRect(vx + 140, vy + 8, 240, 48);
+    ctx.fillRect(vx + 120, vy + 8, 280, 60);
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 18px monospace';
+    ctx.font = 'bold 20px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('PUEBLO / CIUDAD', vx + 260, vy + 38);
+    ctx.fillText('CIUDAD', vx + 260, vy + 40);
     ctx.font = '12px monospace';
-    ctx.fillText('VEN AL LADO DEL CORRAL', vx + 260, vy + 56);
+    ctx.fillText('EN EL CENTRO', vx + 260, vy + 60);
     ctx.textAlign = 'start';
 
     // City buildings for clearer visual
@@ -761,7 +761,25 @@ const World = {
     this._drawBuilding(vx + 220, vy + 160, '#1abc9c', '#16a085', 'CASA');
     this._drawBuilding(vx + 20, vy + 320, '#f1c40f', '#b7950b', 'ALMACÉN');
     this._drawBuilding(vx + 220, vy + 320, '#d35400', '#a04020', 'POSTAL');
-  }
+
+    // Houses
+    this._drawHouse(vx + 20,  vy + 300, '#8B6914', '#5C4400');
+    this._drawHouse(vx + 160, vy + 300, '#8B1A8B', '#5C005C');
+    this._drawHouse(vx + 300, vy + 300, '#1A5C8B', '#003366');
+    this._drawHouse(vx + 80,  vy + 180, '#8B1A1A', '#5C0000');
+    this._drawHouse(vx + 240, vy + 180, '#2d7a1e', '#1a4a10');
+
+    // Village fence
+    ctx.fillStyle = '#8B5e3c';
+    ctx.fillRect(vx - 10, vy, 540, 6);
+    ctx.fillRect(vx - 10, vy + 520, 540, 6);
+    ctx.fillRect(vx - 10, vy, 6, 526);
+    ctx.fillRect(vx + 524, vy, 6, 526);
+    ctx.fillStyle = '#6b3e1c';
+    for (let x = vx - 10; x < vx + 520; x += 40) {
+      ctx.fillRect(x - 3, vy - 8, 8, 20);
+      ctx.fillRect(x - 3, vy + 518, 8, 20);
+    }
   },
 
   _drawCityMarker() {
@@ -794,26 +812,6 @@ const World = {
     ctx.lineTo(x + 40, y);
     ctx.stroke();
     ctx.restore();
-  },
-
-    // Houses
-    this._drawHouse(vx + 20,  vy + 300, '#8B6914', '#5C4400');
-    this._drawHouse(vx + 160, vy + 300, '#8B1A8B', '#5C005C');
-    this._drawHouse(vx + 300, vy + 300, '#1A5C8B', '#003366');
-    this._drawHouse(vx + 80,  vy + 180, '#8B1A1A', '#5C0000');
-    this._drawHouse(vx + 240, vy + 180, '#2d7a1e', '#1a4a10');
-
-    // Village fence
-    ctx.fillStyle = '#8B5e3c';
-    ctx.fillRect(vx - 10, vy, 540, 6);
-    ctx.fillRect(vx - 10, vy + 520, 540, 6);
-    ctx.fillRect(vx - 10, vy, 6, 526);
-    ctx.fillRect(vx + 524, vy, 6, 526);
-    ctx.fillStyle = '#6b3e1c';
-    for (let x = vx - 10; x < vx + 520; x += 40) {
-      ctx.fillRect(x - 3, vy - 8, 8, 20);
-      ctx.fillRect(x - 3, vy + 518, 8, 20);
-    }
   },
 
   _drawBuilding(x, y, wallColor, roofColor, label) {

@@ -82,8 +82,8 @@ const World = {
     this.ctx.imageSmoothingEnabled = false;
     this.playerName = playerName;
     this.player.name = playerName;
-    this.player.x = 280;
-    this.player.y = 400;
+    this.player.x = 420;
+    this.player.y = 300;
 
     this._buildPigs();
     this._buildNPCs();
@@ -735,50 +735,57 @@ const World = {
     const vx = this.VILLAGE_X;
     const vy = this.VILLAGE_Y;
 
-    // Village ground with a distinct city color
-    ctx.fillStyle = '#8a9a7a';
-    ctx.fillRect(vx - 20, vy - 20, 520, 520);
-    ctx.fillStyle = 'rgba(255,255,255,0.12)';
-    for (let x = vx; x < vx + 520; x += 40) {
-      ctx.fillRect(x, vy, 24, 520);
-    }
+    // Large city area
+    ctx.fillStyle = '#e8d7b7';
+    ctx.fillRect(vx - 40, vy - 40, 620, 600);
+    ctx.fillStyle = '#c0b09a';
+    ctx.fillRect(vx - 20, vy - 20, 580, 560);
 
-    // Village sign
-    ctx.fillStyle = '#6b3e1c';
-    ctx.fillRect(vx + 120, vy + 8, 280, 60);
+    // City main boulevard
+    ctx.fillStyle = '#6b4d3d';
+    ctx.fillRect(vx + 40, vy + 70, 500, 60);
+    ctx.fillRect(vx + 220, vy + 70, 60, 420);
+
+    // City sign
+    ctx.fillStyle = '#c0392b';
+    ctx.fillRect(vx + 60, vy + 20, 440, 70);
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 20px monospace';
+    ctx.font = 'bold 28px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('CIUDAD', vx + 260, vy + 40);
-    ctx.font = '12px monospace';
-    ctx.fillText('EN EL CENTRO', vx + 260, vy + 60);
+    ctx.fillText('CIUDAD', vx + 300, vy + 60);
+    ctx.font = '16px monospace';
+    ctx.fillText('ESTÁS AQUÍ', vx + 300, vy + 88);
     ctx.textAlign = 'start';
+
+    // Big central plaza
+    ctx.fillStyle = '#f7f1da';
+    ctx.fillRect(vx + 120, vy + 160, 320, 220);
+    ctx.fillStyle = '#d35400';
+    ctx.fillRect(vx + 160, vy + 200, 240, 140);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('PLAZA DEL CERDO', vx + 280, vy + 230);
 
     // City buildings for clearer visual
     this._drawBuilding(this.SHOP_X, this.SHOP_Y, '#f39c12', '#d35400', 'TIENDA');
     this._drawBuilding(this.SLAUGHTER_X, this.SLAUGHTER_Y, '#c0392b', '#922b21', 'MATADERO');
-    this._drawBuilding(vx + 20, vy + 160, '#8e44ad', '#6c3483', 'MERCADO');
-    this._drawBuilding(vx + 220, vy + 160, '#1abc9c', '#16a085', 'CASA');
-    this._drawBuilding(vx + 20, vy + 320, '#f1c40f', '#b7950b', 'ALMACÉN');
-    this._drawBuilding(vx + 220, vy + 320, '#d35400', '#a04020', 'POSTAL');
-
-    // Houses
-    this._drawHouse(vx + 20,  vy + 300, '#8B6914', '#5C4400');
-    this._drawHouse(vx + 160, vy + 300, '#8B1A8B', '#5C005C');
-    this._drawHouse(vx + 300, vy + 300, '#1A5C8B', '#003366');
-    this._drawHouse(vx + 80,  vy + 180, '#8B1A1A', '#5C0000');
-    this._drawHouse(vx + 240, vy + 180, '#2d7a1e', '#1a4a10');
+    this._drawBuilding(vx + 30, vy + 280, '#8e44ad', '#6c3483', 'MERCADO');
+    this._drawBuilding(vx + 270, vy + 280, '#1abc9c', '#16a085', 'CASA');
+    this._drawBuilding(vx + 30, vy + 360, '#f1c40f', '#b7950b', 'ALMACÉN');
+    this._drawBuilding(vx + 270, vy + 360, '#d35400', '#a04020', 'POSTAL');
 
     // Village fence
     ctx.fillStyle = '#8B5e3c';
-    ctx.fillRect(vx - 10, vy, 540, 6);
-    ctx.fillRect(vx - 10, vy + 520, 540, 6);
-    ctx.fillRect(vx - 10, vy, 6, 526);
-    ctx.fillRect(vx + 524, vy, 6, 526);
+    ctx.fillRect(vx - 20, vy - 20, 580, 8);
+    ctx.fillRect(vx - 20, vy + 540, 580, 8);
+    ctx.fillRect(vx - 20, vy - 20, 8, 560);
+    ctx.fillRect(vx + 560, vy - 20, 8, 560);
+
     ctx.fillStyle = '#6b3e1c';
-    for (let x = vx - 10; x < vx + 520; x += 40) {
-      ctx.fillRect(x - 3, vy - 8, 8, 20);
-      ctx.fillRect(x - 3, vy + 518, 8, 20);
+    for (let x = vx - 20; x < vx + 560; x += 40) {
+      ctx.fillRect(x, vy - 24, 12, 12);
+      ctx.fillRect(x, vy + 548, 12, 12);
     }
   },
 

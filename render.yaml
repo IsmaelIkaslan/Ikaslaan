@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: del-corral-al-corte
+    env: node
+    plan: free
+    branch: master
+    buildCommand: npm install
+    startCommand: npm start

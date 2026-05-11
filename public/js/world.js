@@ -289,9 +289,9 @@ const World = {
     const k = this.keys;
     let dx = 0, dy = 0;
 
-    if (k['ArrowLeft']  || k['KeyA']) { dx -= 1; p.dir = 'left';  }
+    if (k['ArrowLeft']  || k['KeyA'] || k['KeyQ']) { dx -= 1; p.dir = 'left';  }
     if (k['ArrowRight'] || k['KeyD']) { dx += 1; p.dir = 'right'; }
-    if (k['ArrowUp']    || k['KeyW']) { dy -= 1; p.dir = 'up';    }
+    if (k['ArrowUp']    || k['KeyW'] || k['KeyZ']) { dy -= 1; p.dir = 'up';    }
     if (k['ArrowDown']  || k['KeyS']) { dy += 1; p.dir = 'down';  }
 
     // Normalize diagonal

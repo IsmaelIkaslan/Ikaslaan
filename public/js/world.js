@@ -1097,4 +1097,5 @@ const World = {
     ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
+};
 

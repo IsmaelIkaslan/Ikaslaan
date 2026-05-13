@@ -24,6 +24,7 @@ const World = {
     this.player.x = 400; this.player.y = 380;
     this.caughtPig = null;
     this.trees = []; this.flowers = []; this.pigs = []; this.npcs = [];
+    console.log('World init - canvas size:', canvasEl.width, 'x', canvasEl.height);
     this.generateWorld();
     this.bindKeys();
     this.bindClick();

@@ -764,6 +764,9 @@ body {
   flex: 1;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 #sections-container {

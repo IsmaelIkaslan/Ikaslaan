@@ -19,16 +19,18 @@ process.on('unhandledRejection', (err) => {
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '../public')));
 
 // Init DB
 initDB();
 
-// Routes
+// API Routes FIRST (before static files)
 app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);
 
-// Serve frontend
+// Static files
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Serve frontend for all other routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });

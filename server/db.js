@@ -1,57 +1,49 @@
-const Datastore = require('@seald-io/nedb');
 const path = require('path');
 const fs = require('fs');
 
 const dataDir = path.join(__dirname, '../data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-const users = new Datastore({
-  filename: path.join(dataDir, 'users.db'),
-  autoload: true
-});
+const USERS_FILE = path.join(dataDir, 'users.json');
+const STATES_FILE = path.join(dataDir, 'states.json');
 
-const gameStates = new Datastore({
-  filename: path.join(dataDir, 'game_states.db'),
-  autoload: true
-});
-
-// Índices únicos
-users.ensureIndex({ fieldName: 'username', unique: true });
-gameStates.ensureIndex({ fieldName: 'userId', unique: true });
-
-// Promisify helpers
-function dbFind(db, query) {
-  return new Promise((resolve, reject) => {
-    db.find(query, (err, docs) => err ? reject(err) : resolve(docs));
-  });
+function readJSON(file) {
+  try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return []; }
+}
+function writeJSON(file, data) {
+  fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
 }
 
-function dbFindOne(db, query) {
-  return new Promise((resolve, reject) => {
-    db.findOne(query, (err, doc) => err ? reject(err) : resolve(doc));
-  });
-}
+const users = { 
+  findOne: (q) => readJSON(USERS_FILE).find(u => Object.keys(q).every(k => u[k] === q[k])) || null,
+  insert: (doc) => { const all = readJSON(USERS_FILE); doc._id = Date.now().toString(36) + Math.random().toString(36).slice(2); all.push(doc); writeJSON(USERS_FILE, all); return doc; },
+  find: (q) => readJSON(USERS_FILE).filter(u => Object.keys(q).every(k => u[k] === q[k]))
+};
 
-function dbInsert(db, doc) {
-  return new Promise((resolve, reject) => {
-    db.insert(doc, (err, newDoc) => err ? reject(err) : resolve(newDoc));
-  });
-}
+const gameStates = {
+  findOne: (q) => readJSON(STATES_FILE).find(s => Object.keys(q).every(k => s[k] === q[k])) || null,
+  insert: (doc) => { const all = readJSON(STATES_FILE); doc._id = Date.now().toString(36) + Math.random().toString(36).slice(2); all.push(doc); writeJSON(STATES_FILE, all); return doc; },
+  update: (q, upd) => { 
+    const all = readJSON(STATES_FILE); 
+    const idx = all.findIndex(s => Object.keys(q).every(k => s[k] === q[k]));
+    if (idx !== -1) { 
+      if (upd.$set) Object.assign(all[idx], upd.$set);
+      writeJSON(STATES_FILE, all); 
+    }
+  },
+  findSorted: (sortField, limit) => {
+    const all = readJSON(STATES_FILE);
+    const key = Object.keys(sortField)[0];
+    const dir = sortField[key];
+    return all.sort((a,b) => dir === -1 ? (b[key]||0)-(a[key]||0) : (a[key]||0)-(b[key]||0)).slice(0, limit);
+  }
+};
 
-function dbUpdate(db, query, update, options = {}) {
-  return new Promise((resolve, reject) => {
-    db.update(query, update, options, (err, numReplaced) => err ? reject(err) : resolve(numReplaced));
-  });
-}
+async function dbFindOne(db, q) { return db.findOne(q); }
+async function dbInsert(db, doc) { return db.insert(doc); }
+async function dbUpdate(db, q, upd) { return db.update(q, upd); }
+async function dbFindSorted(db, q, sort, limit) { return db.findSorted(sort, limit); }
 
-function dbFindSorted(db, query, sortField, limit) {
-  return new Promise((resolve, reject) => {
-    db.find(query).sort(sortField).limit(limit).exec((err, docs) => err ? reject(err) : resolve(docs));
-  });
-}
+function initDB() { console.log('✅ Base de datos JSON inicializada'); }
 
-function initDB() {
-  console.log('✅ Base de datos NeDB inicializada');
-}
-
-module.exports = { users, gameStates, dbFind, dbFindOne, dbInsert, dbUpdate, dbFindSorted, initDB };
+module.exports = { users, gameStates, dbFindOne, dbInsert, dbUpdate, dbFindSorted, initDB };

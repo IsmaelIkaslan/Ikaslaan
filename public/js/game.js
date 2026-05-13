@@ -13,11 +13,13 @@ const Game = {
     // Load state
     await this.loadState();
 
-    // Init world map
+    // Init world map — wait one frame so the DOM has rendered and flex sizes are calculated
     const worldCanvas = document.getElementById('world-canvas');
-    worldCanvas.width  = worldCanvas.offsetWidth  || window.innerWidth;
-    worldCanvas.height = worldCanvas.offsetHeight || (window.innerHeight - 52);
-    World.init(worldCanvas, username);
+    requestAnimationFrame(() => {
+      worldCanvas.width  = worldCanvas.parentElement.offsetWidth  || window.innerWidth;
+      worldCanvas.height = worldCanvas.parentElement.offsetHeight || (window.innerHeight - 100);
+      World.init(worldCanvas, username);
+    });
 
     // Resize world canvas on window resize
     window.addEventListener('resize', () => {

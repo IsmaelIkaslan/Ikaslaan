@@ -748,12 +748,16 @@ body {
 #screen-game {
   flex-direction: column;
   background: #2d5a1b;
+  height: 100vh;
+  overflow: hidden;
 }
 
 #world-overlay {
   flex: 1;
   overflow: hidden;
   display: flex;
+  min-height: 0;
+  height: 100%;
 }
 
 #world-canvas {

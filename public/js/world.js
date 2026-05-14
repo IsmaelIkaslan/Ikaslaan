@@ -1,19 +1,18 @@
 // ===== WORLD TOP-DOWN =====
 const World = {
   canvas: null, ctx: null, animId: null, time: 0,
-  player: { x: 400, y: 380, vx: 0, vy: 0, speed: 2.5, dir: 'down', frame: 0, frameTimer: 0, moving: false, name: '' },
+  player: { x: 400, y: 400, vx: 0, vy: 0, speed: 2.5, dir: 'down', frame: 0, frameTimer: 0, moving: false, name: '' },
   cam: { x: 0, y: 0 },
-  MAP_W: 1400, MAP_H: 1000,
+  MAP_W: 900, MAP_H: 700,
   keys: {},
   caughtPig: null,
   notification: null, notifTimer: 0,
-  trees: [], flowers: [], pigs: [], npcs: [],
-  trough: { x: 260, y: 270, w: 44, h: 24 },
+  trees: [], flowers: [], pigs: [], npcs: [], cars: [],
+  trough: { x: 180, y: 200, w: 44, h: 24 },
   zones: [
-    { id: 'corral',   x: 80,  y: 80,  w: 320, h: 260, label: 'Corral',   color: '#8B5e3c', floor: '#c8a46e' },
-    { id: 'tienda',   x: 750, y: 60,  w: 220, h: 200, label: 'Tienda',   color: '#2d7a1e', floor: '#a8d878' },
-    { id: 'matadero', x: 750, y: 580, w: 240, h: 220, label: 'Matadero', color: '#8B1A1A', floor: '#c8a0a0' },
-    { id: 'ranking',  x: 80,  y: 660, w: 200, h: 180, label: 'Ranking',  color: '#b8860b', floor: '#ffd700' }
+    { id: 'corral',   x: 60,  y: 60,  w: 260, h: 220, label: 'Corral',   color: '#8B5e3c', floor: '#c8a46e' },
+    { id: 'tienda',   x: 580, y: 60,  w: 200, h: 180, label: 'Tienda',   color: '#2d7a1e', floor: '#a8d878' },
+    { id: 'matadero', x: 580, y: 460, w: 220, h: 200, label: 'Matadero', color: '#8B1A1A', floor: '#c8a0a0' },
   ],
 
   init(canvasEl, playerName) {
@@ -21,9 +20,9 @@ const World = {
     this.ctx = canvasEl.getContext('2d');
     this.ctx.imageSmoothingEnabled = false;
     this.player.name = playerName;
-    this.player.x = 400; this.player.y = 380;
+    this.player.x = 400; this.player.y = 400;
     this.caughtPig = null;
-    this.trees = []; this.flowers = []; this.pigs = []; this.npcs = [];
+    this.trees = []; this.flowers = []; this.pigs = []; this.npcs = []; this.cars = [];
     console.log('World init - canvas size:', canvasEl.width, 'x', canvasEl.height);
     this.generateWorld();
     this.bindKeys();
@@ -32,40 +31,38 @@ const World = {
   },
 
   generateWorld() {
-    // Trees
-    [[50,50],[50,250],[50,500],[50,750],[200,820],[400,820],[600,820],[900,820],[1100,820],
-     [1100,600],[1100,400],[1100,200],[1100,50],[900,50],[700,50],[500,50],[300,50],
-     [480,200],[560,300],[360,500],[860,300],[960,500]
-    ].forEach(([x,y]) => this.trees.push({ x, y, size: 28 + Math.random()*16, sway: Math.random()*Math.PI*2 }));
+    // Trees (fewer, around edges)
+    [[20,20],[20,150],[20,350],[20,550],[20,650],
+     [200,650],[400,650],[600,650],[800,650],[880,500],[880,300],[880,100],
+     [700,650],[450,30],[350,30]
+    ].forEach(([x,y]) => this.trees.push({ x, y, size: 24+Math.random()*14, sway: Math.random()*Math.PI*2 }));
 
     // Flowers
-    for (let i = 0; i < 50; i++) {
+    for (let i=0;i<35;i++) {
       this.flowers.push({
-        x: 80 + Math.random()*1240, y: 80 + Math.random()*740,
+        x: 60+Math.random()*780, y: 60+Math.random()*580,
         color: ['#ff6b9d','#ffd700','#a29bfe','#fd79a8','#fdcb6e'][Math.floor(Math.random()*5)],
-        size: 4 + Math.random()*4
+        size: 4+Math.random()*4
       });
     }
 
     // Pigs in corral
-    const pigNames = ['Porky','Peppa','Bacon','Chuleta','Jamón'];
-    const state = (typeof Game !== 'undefined' && Game.state) ? Game.state.pigs : [];
+    const state = (typeof Game!=='undefined'&&Game.state)?Game.state.pigs:[];
     const pigData = state.length ? state : [
       {id:1,name:'Porky',weight:5,quality:'media',experience:0,stage:'cochinillo'},
       {id:2,name:'Peppa',weight:4,quality:'media',experience:0,stage:'cochinillo'}
     ];
-    pigData.forEach((p, i) => {
+    pigData.forEach((p,i) => {
       this.pigs.push({
-        id: p.id, name: p.name, weight: p.weight, quality: p.quality,
-        experience: p.experience || 0, stage: p.stage || 'cochinillo',
-        x: 140 + (i % 3) * 80, y: 160 + Math.floor(i/3) * 70,
-        dir: 1, speed: 0.4 + Math.random()*0.3,
-        frame: 0, timer: 0, idle: 60 + Math.floor(Math.random()*120),
-        caught: false
+        id:p.id, name:p.name, weight:p.weight, quality:p.quality,
+        experience:p.experience||0, stage:p.stage||'cochinillo',
+        x:110+(i%3)*60, y:130+Math.floor(i/3)*60,
+        dir:1, speed:0.4+Math.random()*0.3,
+        frame:0, timer:0, idle:60+Math.floor(Math.random()*120), caught:false
       });
     });
 
-    // NPCs from village
+    // NPCs from village (right side)
     [
       {name:'Don Ramón',  skin:'#f4c4a0',shirt:'#3498db',hat:true, hatColor:'#8B5e3c'},
       {name:'María José', skin:'#f4b090',shirt:'#e91e8c',hat:false,hair:'#4a2800'},
@@ -73,17 +70,27 @@ const World = {
       {name:'Doña Paca',  skin:'#f0c8a0',shirt:'#9b59b6',hat:false,hair:'#888'},
       {name:'Chef Marcos',skin:'#e8b080',shirt:'#ecf0f1',hat:true, hatColor:'#ecf0f1'},
       {name:'Pepe el bar',skin:'#c8905a',shirt:'#e67e22',hat:false,hair:'#2c1810'},
-      {name:'La Conchi',  skin:'#f8d0b0',shirt:'#e74c3c',hat:false,hair:'#c0392b'},
-      {name:'Manolo',     skin:'#d4a878',shirt:'#2980b9',hat:true, hatColor:'#6b3e1c'},
-    ].forEach((n, i) => {
+    ].forEach((n,i) => {
       this.npcs.push({
         ...n,
-        x: 1050 + Math.random()*80, y: 120 + i*90,
-        targetX: 620 + Math.random()*160, targetY: 180 + Math.random()*500,
-        arrived: false, speed: 0.35 + Math.random()*0.25,
-        phase: Math.random()*Math.PI*2, walkFrame: 0, walkTimer: 0, dir: 'left'
+        x:820+Math.random()*60, y:100+i*90,
+        targetX:480+Math.random()*100, targetY:150+Math.random()*400,
+        arrived:false, speed:0.35+Math.random()*0.25,
+        phase:Math.random()*Math.PI*2, walkFrame:0, walkTimer:0, dir:'left'
       });
     });
+
+    // Cars on city road
+    const carColors = ['#e74c3c','#3498db','#f1c40f','#2ecc71','#e67e22','#9b59b6'];
+    for (let i=0;i<4;i++) {
+      this.cars.push({
+        x: 340+i*120, y: 330,
+        dir: i%2===0?1:-1,
+        speed: 1.2+Math.random()*0.8,
+        color: carColors[i%carColors.length],
+        lane: i%2===0?330:350
+      });
+    }
   },
 
   bindKeys() {
@@ -197,6 +204,13 @@ const World = {
     this.cam.x = Math.max(0, Math.min(this.MAP_W - this.canvas.width,  p.x - this.canvas.width/2));
     this.cam.y = Math.max(0, Math.min(this.MAP_H - this.canvas.height, p.y - this.canvas.height/2));
 
+    // Cars move along road
+    this.cars.forEach(car => {
+      car.x += car.dir * car.speed;
+      if (car.x > this.MAP_W + 40) car.x = -40;
+      if (car.x < -40) car.x = this.MAP_W + 40;
+    });
+
     // Pig caught follows player
     if (this.caughtPig) {
       this.caughtPig.x += (p.x - 30 - this.caughtPig.x) * 0.15;
@@ -259,47 +273,68 @@ const World = {
   },
 
   drawGround() {
-    const ctx = this.ctx, W = this.MAP_W, H = this.MAP_H;
-    ctx.fillStyle = '#5a9e3a'; ctx.fillRect(0,0,W,H);
-    const S = 16;
-    for (let x=0;x<W;x+=S) for (let y=0;y<H;y+=S) {
-      const h = (x*7+y*13)%5;
-      if (h===0){ctx.fillStyle='#4a8a2e';ctx.fillRect(x,y,S,S);}
-      if (h===1){ctx.fillStyle='#6ab04c';ctx.fillRect(x,y,S,S);}
+    const ctx=this.ctx, W=this.MAP_W, H=this.MAP_H;
+    ctx.fillStyle='#5a9e3a'; ctx.fillRect(0,0,W,H);
+    const S=16;
+    for(let x=0;x<W;x+=S) for(let y=0;y<H;y+=S){
+      const h=(x*7+y*13)%5;
+      if(h===0){ctx.fillStyle='#4a8a2e';ctx.fillRect(x,y,S,S);}
+      if(h===1){ctx.fillStyle='#6ab04c';ctx.fillRect(x,y,S,S);}
     }
-    // Paths
-    ctx.fillStyle='#c8a46e'; ctx.fillRect(0,360,W,32); ctx.fillRect(560,0,32,H);
-    ctx.fillStyle='#b8944e';
-    for(let x=0;x<W;x+=48) ctx.fillRect(x,360,24,32);
-    for(let y=0;y<H;y+=48) ctx.fillRect(560,y,32,24);
+    // Main road horizontal
+    ctx.fillStyle='#888'; ctx.fillRect(0,320,W,50);
+    ctx.fillStyle='#bbb'; ctx.fillRect(0,316,W,5); ctx.fillRect(0,368,W,5);
+    ctx.fillStyle='#777';
+    for(let x=0;x<W;x+=40) ctx.fillRect(x,343,20,4);
+    // Vertical road (city side)
+    ctx.fillStyle='#888'; ctx.fillRect(540,0,50,H);
+    ctx.fillStyle='#bbb'; ctx.fillRect(536,0,5,H); ctx.fillRect(588,0,5,H);
+    ctx.fillStyle='#777';
+    for(let y=0;y<H;y+=40) ctx.fillRect(563,y,4,20);
+    // Dirt path to corral
+    ctx.fillStyle='#c8a46e'; ctx.fillRect(315,0,30,320);
     // Pond
-    ctx.fillStyle='#4a90d9'; ctx.fillRect(460,460,80,60);
-    ctx.fillStyle='#5aa0e9'; ctx.fillRect(464,464,40,20);
-    ctx.strokeStyle='#3a7ab9'; ctx.lineWidth=3; ctx.strokeRect(460,460,80,60);
-    // Village ground
-    ctx.fillStyle='#c8b090'; ctx.fillRect(820,80,340,740);
-    ctx.fillStyle='#b8a070'; ctx.fillRect(820,360,340,32);
-    // Village fence
-    ctx.fillStyle='#8B5e3c'; ctx.fillRect(820,80,8,740);
-    ctx.fillStyle='#6b3e1c';
-    for(let y=80;y<820;y+=28) ctx.fillRect(816,y,8,14);
-    // Village houses
-    [{x:840,y:100,w:70,h:60,roof:'#8B1A1A',wall:'#f0e0c0'},
-     {x:940,y:100,w:70,h:60,roof:'#1a5c8B',wall:'#e0f0c0'},
-     {x:1060,y:100,w:70,h:60,roof:'#2d7a1e',wall:'#f0f0c0'},
-     {x:840,y:600,w:70,h:60,roof:'#8B5e3c',wall:'#f0e8d0'},
-     {x:960,y:600,w:80,h:70,roof:'#5c1a8B',wall:'#f0d0f0'},
-     {x:1070,y:600,w:70,h:60,roof:'#8B1A1A',wall:'#f0e0c0'}
-    ].forEach(h => {
+    ctx.fillStyle='#4a90d9'; ctx.fillRect(360,400,65,50);
+    ctx.fillStyle='#5aa0e9'; ctx.fillRect(364,404,30,16);
+    ctx.strokeStyle='#3a7ab9'; ctx.lineWidth=3; ctx.strokeRect(360,400,65,50);
+    // City ground
+    ctx.fillStyle='#c8b090'; ctx.fillRect(594,0,W-594,H);
+    ctx.fillStyle='#b8a070'; ctx.fillRect(594,320,W-594,50);
+    // City houses
+    [{x:608,y:30,w:58,h:52,roof:'#8B1A1A',wall:'#f0e0c0'},
+     {x:682,y:30,w:58,h:52,roof:'#1a5c8B',wall:'#e0f0c0'},
+     {x:756,y:30,w:58,h:52,roof:'#2d7a1e',wall:'#f0f0c0'},
+     {x:830,y:30,w:50,h:52,roof:'#8B5e3c',wall:'#f0e8d0'},
+     {x:608,y:400,w:58,h:52,roof:'#5c1a8B',wall:'#f0d0f0'},
+     {x:682,y:400,w:65,h:58,roof:'#8B1A1A',wall:'#f0e0c0'},
+     {x:762,y:400,w:58,h:52,roof:'#2d7a1e',wall:'#e0f0c0'},
+     {x:836,y:400,w:50,h:52,roof:'#b8860b',wall:'#fff8e0'},
+    ].forEach(h=>{
       ctx.fillStyle=h.wall; ctx.fillRect(h.x,h.y,h.w,h.h);
       ctx.fillStyle=h.roof;
-      ctx.beginPath(); ctx.moveTo(h.x-6,h.y); ctx.lineTo(h.x+h.w/2,h.y-28); ctx.lineTo(h.x+h.w+6,h.y); ctx.closePath(); ctx.fill();
-      ctx.fillStyle='#6b3e1c'; ctx.fillRect(h.x+h.w/2-8,h.y+h.h-22,16,22);
-      ctx.fillStyle='rgba(255,220,100,0.8)'; ctx.fillRect(h.x+8,h.y+12,14,12); ctx.fillRect(h.x+h.w-22,h.y+12,14,12);
+      ctx.beginPath(); ctx.moveTo(h.x-4,h.y); ctx.lineTo(h.x+h.w/2,h.y-22); ctx.lineTo(h.x+h.w+4,h.y); ctx.closePath(); ctx.fill();
+      ctx.fillStyle='#6b3e1c'; ctx.fillRect(h.x+h.w/2-6,h.y+h.h-18,12,18);
+      ctx.fillStyle='rgba(255,220,100,0.8)'; ctx.fillRect(h.x+5,h.y+8,11,9); ctx.fillRect(h.x+h.w-16,h.y+8,11,9);
     });
-    ctx.fillStyle='#8B5e3c'; ctx.fillRect(820,340,80,24);
-    ctx.fillStyle='#ffd700'; ctx.font='bold 8px "Press Start 2P",monospace'; ctx.textAlign='center';
-    ctx.fillText('POBLADO',860,356);
+    // City sign
+    ctx.fillStyle='#8B5e3c'; ctx.fillRect(594,295,75,20);
+    ctx.fillStyle='#ffd700'; ctx.font='bold 6px "Press Start 2P",monospace'; ctx.textAlign='center';
+    ctx.fillText('CIUDAD',631,309);
+    // Draw cars
+    this.cars.forEach(car=>{
+      ctx.save(); ctx.translate(car.x,car.lane);
+      if(car.dir===-1) ctx.scale(-1,1);
+      ctx.fillStyle=car.color; ctx.fillRect(-18,-8,36,16);
+      ctx.fillStyle='rgba(180,220,255,0.85)'; ctx.fillRect(-9,-15,8,8); ctx.fillRect(2,-15,8,8);
+      ctx.fillStyle='#222';
+      ctx.beginPath(); ctx.arc(-11,8,5,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(11,8,5,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#555';
+      ctx.beginPath(); ctx.arc(-11,8,2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(11,8,2,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#ffe066'; ctx.fillRect(16,-4,4,4);
+      ctx.restore();
+    });
   },
 
   drawZones() {

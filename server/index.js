@@ -27,6 +27,9 @@ initDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);
 
+// Debug route to confirm server is working
+app.get('/api/ping', (req, res) => res.json({ ok: true, time: new Date() }));
+
 // Static files
 app.use(express.static(path.join(__dirname, '../public')));
 

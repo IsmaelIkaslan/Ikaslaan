@@ -27,8 +27,8 @@ async function initDB() {
     await mongoose.connect(MONGO_URI);
     console.log('✅ MongoDB conectado');
   } catch (err) {
-    console.error('❌ Error MongoDB:', err.message);
-    process.exit(1);
+    console.error('⚠️ MongoDB no disponible, usando JSON local:', err.message);
+    // No hacer process.exit — el servidor sigue funcionando con JSON fallback
   }
 }
 

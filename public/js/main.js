@@ -12,9 +12,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Init matadero
   Matadero.init();
 
-  // Check if already logged in (auto-login via cookie)
-  const loggedIn = await Auth.checkSession();
-  if (!loggedIn) {
-    showScreen('auth');
-  }
+  // Always show login screen — no auto-login
+  showScreen('auth');
 });

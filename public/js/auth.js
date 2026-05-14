@@ -22,25 +22,31 @@ const Auth = {
       const errorEl = document.getElementById('login-error');
       errorEl.textContent = '';
 
-      if (!username || !password) {
-        errorEl.textContent = 'Rellena todos los campos';
-        return;
-      }
+      if (!username || !password) { errorEl.textContent = 'Rellena todos los campos'; return; }
 
       const btn = e.target.querySelector('button[type="submit"]');
-      btn.textContent = 'Entrando...';
-      btn.disabled = true;
-
-      const res = await API.post('/api/auth/login', { username, password });
-
       btn.textContent = '¡Entrar a la granja!';
-      btn.disabled = false;
+      btn.disabled = true;
+      btn.textContent = 'Entrando...';
 
-      if (res.error) {
-        errorEl.textContent = res.error;
-      } else {
-        Auth.currentUser = res.username;
-        Game.start(res.username);
+      try {
+        const res = await Promise.race([
+          API.post('/api/auth/login', { username, password }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+        ]);
+        if (res.error) {
+          errorEl.textContent = res.error;
+        } else {
+          Auth.currentUser = res.username;
+          Game.start(res.username);
+        }
+      } catch (err) {
+        errorEl.textContent = err.message === 'timeout'
+          ? 'El servidor tardó demasiado. Inténtalo de nuevo.'
+          : 'Error de conexión. Inténtalo de nuevo.';
+      } finally {
+        btn.textContent = '¡Entrar a la granja!';
+        btn.disabled = false;
       }
     });
 
@@ -52,25 +58,30 @@ const Auth = {
       const errorEl = document.getElementById('reg-error');
       errorEl.textContent = '';
 
-      if (!username || !password) {
-        errorEl.textContent = 'Rellena todos los campos';
-        return;
-      }
+      if (!username || !password) { errorEl.textContent = 'Rellena todos los campos'; return; }
 
       const btn = e.target.querySelector('button[type="submit"]');
-      btn.textContent = 'Creando granja...';
       btn.disabled = true;
+      btn.textContent = 'Creando granja...';
 
-      const res = await API.post('/api/auth/register', { username, password });
-
-      btn.textContent = '¡Crear mi granja!';
-      btn.disabled = false;
-
-      if (res.error) {
-        errorEl.textContent = res.error;
-      } else {
-        Auth.currentUser = res.username;
-        Game.start(res.username);
+      try {
+        const res = await Promise.race([
+          API.post('/api/auth/register', { username, password }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+        ]);
+        if (res.error) {
+          errorEl.textContent = res.error;
+        } else {
+          Auth.currentUser = res.username;
+          Game.start(res.username);
+        }
+      } catch (err) {
+        errorEl.textContent = err.message === 'timeout'
+          ? 'El servidor tardó demasiado. Inténtalo de nuevo.'
+          : 'Error de conexión. Inténtalo de nuevo.';
+      } finally {
+        btn.textContent = '¡Crear mi granja!';
+        btn.disabled = false;
       }
     });
 

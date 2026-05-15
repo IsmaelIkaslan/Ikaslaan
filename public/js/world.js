@@ -11,8 +11,8 @@ const World = {
   trough: { x: 180, y: 200, w: 44, h: 24 },
   zones: [
     { id: 'corral',   x: 60,  y: 60,  w: 260, h: 220, label: 'Corral',   color: '#8B5e3c', floor: '#c8a46e' },
-    { id: 'tienda',   x: 580, y: 60,  w: 200, h: 180, label: 'Tienda',   color: '#2d7a1e', floor: '#a8d878' },
-    { id: 'matadero', x: 580, y: 460, w: 220, h: 200, label: 'Matadero', color: '#8B1A1A', floor: '#c8a0a0' },
+    { id: 'tienda',   x: 260, y: 60,  w: 200, h: 180, label: 'Tienda',   color: '#2d7a1e', floor: '#a8d878' },
+    { id: 'matadero', x: 260, y: 460, w: 220, h: 200, label: 'Matadero', color: '#8B1A1A', floor: '#c8a0a0' },
   ],
 
   init(canvasEl, playerName) {
@@ -261,6 +261,7 @@ const World = {
     const offsetY = Math.max(0, (H - this.MAP_H) / 2);
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0,0,W,H);
+    this.drawBackground(W, H, offsetX, offsetY);
     ctx.save();
     ctx.translate(offsetX - this.cam.x, offsetY - this.cam.y);
     this.drawGround();
@@ -274,6 +275,43 @@ const World = {
     ctx.restore();
     this.drawMinimap();
     this.drawNotification();
+  },
+
+  drawBackground(canvasW, canvasH, offsetX, offsetY) {
+    const ctx = this.ctx;
+    ctx.fillStyle = '#1f4f1a';
+    ctx.fillRect(0, 0, canvasW, canvasH);
+
+    ctx.fillStyle = 'rgba(45,95,30,0.18)';
+    for (let x = 0; x < canvasW; x += 40) {
+      for (let y = 0; y < canvasH; y += 40) {
+        if ((x + y) % 80 === 0) ctx.fillRect(x, y, 18, 18);
+      }
+    }
+
+    const trees = [
+      { x: 30, y: 80, s: 24 }, { x: 100, y: 40, s: 18 }, { x: 220, y: 120, s: 26 },
+      { x: 50, y: canvasH - 110, s: 30 }, { x: 160, y: canvasH - 70, s: 22 },
+      { x: canvasW - 80, y: 80, s: 24 }, { x: canvasW - 130, y: 170, s: 20 },
+      { x: canvasW - 70, y: canvasH - 90, s: 26 }, { x: canvasW - 190, y: canvasH - 50, s: 22 }
+    ];
+
+    trees.forEach(tree => {
+      ctx.fillStyle = '#2c6726';
+      ctx.beginPath();
+      ctx.ellipse(tree.x, tree.y, tree.s * 0.6, tree.s * 0.8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#1f4214';
+      ctx.fillRect(tree.x - 3, tree.y, 6, tree.s * 0.8);
+      ctx.fillStyle = '#2d7128';
+      ctx.beginPath();
+      ctx.arc(tree.x - tree.s * 0.18, tree.y - tree.s * 0.2, tree.s * 0.38, 0, Math.PI * 2);
+      ctx.arc(tree.x + tree.s * 0.18, tree.y - tree.s * 0.3, tree.s * 0.36, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    ctx.fillStyle = '#17370f';
+    ctx.fillRect(offsetX - 12, offsetY - 6, this.MAP_W + 24, this.MAP_H + 12);
   },
 
   drawGround() {

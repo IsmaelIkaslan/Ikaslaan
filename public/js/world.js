@@ -11,8 +11,8 @@ const World = {
   trough: { x: 180, y: 200, w: 44, h: 24 },
   zones: [
     { id: 'corral',   x: 60,  y: 60,  w: 260, h: 220, label: 'Corral',   color: '#8B5e3c', floor: '#c8a46e' },
-    { id: 'tienda',   x: 260, y: 60,  w: 200, h: 180, label: 'Tienda',   color: '#2d7a1e', floor: '#a8d878' },
-    { id: 'matadero', x: 260, y: 460, w: 220, h: 200, label: 'Matadero', color: '#8B1A1A', floor: '#c8a0a0' },
+    { id: 'tienda',   x: 650, y: 140, w: 180, h: 160, label: 'Tienda',   color: '#2d7a1e', floor: '#a8d878' },
+    { id: 'matadero', x: 60,  y: 460, w: 220, h: 200, label: 'Matadero', color: '#8B1A1A', floor: '#c8a0a0' },
   ],
 
   init(canvasEl, playerName) {
@@ -339,18 +339,50 @@ const World = {
     ctx.fillStyle='#4a90d9'; ctx.fillRect(360,400,65,50);
     ctx.fillStyle='#5aa0e9'; ctx.fillRect(364,404,30,16);
     ctx.strokeStyle='#3a7ab9'; ctx.lineWidth=3; ctx.strokeRect(360,400,65,50);
-    // City ground
-    ctx.fillStyle='#c8b090'; ctx.fillRect(594,0,W-594,H);
-    ctx.fillStyle='#b8a070'; ctx.fillRect(594,320,W-594,50);
+    // City ground and plaza
+    const cityX = 520;
+    const cityW = W - cityX;
+    ctx.fillStyle='#c8b290'; ctx.fillRect(cityX,0,cityW,H);
+    ctx.fillStyle='#b8a070'; ctx.fillRect(cityX,320,cityW,50);
+
+    // Plaza area around the store
+    const plaza = { x: 590, y: 140, w: 260, h: 210 };
+    ctx.fillStyle = '#d6c89a'; ctx.fillRect(plaza.x, plaza.y, plaza.w, plaza.h);
+    ctx.fillStyle = '#c4b287';
+    for (let px = plaza.x; px < plaza.x + plaza.w; px += 24) {
+      for (let py = plaza.y; py < plaza.y + plaza.h; py += 24) {
+        const offset = ((px + py) / 24) % 2 === 0 ? 0 : 6;
+        ctx.fillRect(px + offset, py + offset, 18, 18);
+      }
+    }
+
+    // Fountain in the plaza
+    const fx = plaza.x + plaza.w / 2;
+    const fy = plaza.y + plaza.h / 2;
+    ctx.fillStyle = '#5aa0e9'; ctx.beginPath(); ctx.arc(fx, fy, 30, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ecf0f1'; ctx.beginPath(); ctx.arc(fx, fy, 18, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#4a90d9'; ctx.lineWidth = 4; ctx.stroke();
+    ctx.fillStyle = '#fbf1a3'; ctx.beginPath(); ctx.arc(fx, fy, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#8B5e3c'; ctx.fillRect(fx - 12, fy + 30, 24, 6);
+    ctx.fillStyle = '#f39c12'; ctx.fillRect(fx - 4, fy + 34, 8, 6);
+
+    // Plaza benches and plants
+    ctx.fillStyle = '#7b5a39'; ctx.fillRect(plaza.x + 16, plaza.y + 20, 40, 6);
+    ctx.fillRect(plaza.x + plaza.w - 56, plaza.y + 20, 40, 6);
+    ctx.fillStyle = '#2f5d24'; ctx.fillRect(plaza.x + 16, plaza.y + plaza.h - 34, 16, 16);
+    ctx.fillRect(plaza.x + plaza.w - 32, plaza.y + plaza.h - 34, 16, 16);
+    ctx.fillStyle = '#4aa93f'; ctx.fillRect(plaza.x + 18, plaza.y + plaza.h - 30, 12, 12);
+    ctx.fillRect(plaza.x + plaza.w - 30, plaza.y + plaza.h - 30, 12, 12);
+
     // City houses
-    [{x:608,y:30,w:58,h:52,roof:'#8B1A1A',wall:'#f0e0c0'},
-     {x:682,y:30,w:58,h:52,roof:'#1a5c8B',wall:'#e0f0c0'},
-     {x:756,y:30,w:58,h:52,roof:'#2d7a1e',wall:'#f0f0c0'},
-     {x:830,y:30,w:50,h:52,roof:'#8B5e3c',wall:'#f0e8d0'},
-     {x:608,y:400,w:58,h:52,roof:'#5c1a8B',wall:'#f0d0f0'},
-     {x:682,y:400,w:65,h:58,roof:'#8B1A1A',wall:'#f0e0c0'},
-     {x:762,y:400,w:58,h:52,roof:'#2d7a1e',wall:'#e0f0c0'},
-     {x:836,y:400,w:50,h:52,roof:'#b8860b',wall:'#fff8e0'},
+    [{x:cityX+40,y:20,w:58,h:52,roof:'#8B1A1A',wall:'#f0e0c0'},
+     {x:cityX+120,y:20,w:58,h:52,roof:'#1a5c8B',wall:'#e0f0c0'},
+     {x:cityX+200,y:20,w:58,h:52,roof:'#2d7a1e',wall:'#f0f0c0'},
+     {x:cityX+280,y:20,w:50,h:52,roof:'#8B5e3c',wall:'#f0e8d0'},
+     {x:cityX+40,y:520,w:58,h:52,roof:'#5c1a8B',wall:'#f0d0f0'},
+     {x:cityX+120,y:520,w:65,h:58,roof:'#8B1A1A',wall:'#f0e0c0'},
+     {x:cityX+200,y:520,w:58,h:52,roof:'#2d7a1e',wall:'#e0f0c0'},
+     {x:cityX+280,y:520,w:50,h:52,roof:'#b8860b',wall:'#fff8e0'},
     ].forEach(h=>{
       ctx.fillStyle=h.wall; ctx.fillRect(h.x,h.y,h.w,h.h);
       ctx.fillStyle=h.roof;
@@ -358,10 +390,14 @@ const World = {
       ctx.fillStyle='#6b3e1c'; ctx.fillRect(h.x+h.w/2-6,h.y+h.h-18,12,18);
       ctx.fillStyle='rgba(255,220,100,0.8)'; ctx.fillRect(h.x+5,h.y+8,11,9); ctx.fillRect(h.x+h.w-16,h.y+8,11,9);
     });
-    // City sign
-    ctx.fillStyle='#8B5e3c'; ctx.fillRect(594,295,75,20);
+
+    // City sign and plaza label
+    ctx.fillStyle='#8B5e3c'; ctx.fillRect(cityX+10,295,75,20);
     ctx.fillStyle='#ffd700'; ctx.font='bold 6px "Press Start 2P",monospace'; ctx.textAlign='center';
-    ctx.fillText('CIUDAD',631,309);
+    ctx.fillText('CIUDAD',cityX+47,309);
+    ctx.fillStyle='#8B5e3c'; ctx.fillRect(plaza.x+20, plaza.y-20, 80, 16);
+    ctx.fillStyle='#ffd700'; ctx.font='6px "Press Start 2P",monospace'; ctx.fillText('PLAZA', plaza.x+60, plaza.y-8);
+
     // Draw cars
     this.cars.forEach(car=>{
       ctx.save(); ctx.translate(car.x,car.lane);

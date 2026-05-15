@@ -334,7 +334,12 @@ const World = {
 
   drawBackground(canvasW, canvasH, offsetX, offsetY) {
     const ctx = this.ctx;
-    ctx.fillStyle = '#1f4f1a';
+    // Sky-to-ground gradient instead of solid green background
+    const g = ctx.createLinearGradient(0, 0, 0, canvasH);
+    g.addColorStop(0, '#7ec8e3');
+    g.addColorStop(0.6, '#4aa06a');
+    g.addColorStop(1, '#1f4f1a');
+    ctx.fillStyle = g;
     ctx.fillRect(0, 0, canvasW, canvasH);
 
     ctx.fillStyle = 'rgba(45,95,30,0.18)';

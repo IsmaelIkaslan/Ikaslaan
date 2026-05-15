@@ -23,6 +23,8 @@ const World = {
     this.player.x = 400; this.player.y = 400;
     this.caughtPig = null;
     this.trees = []; this.flowers = []; this.pigs = []; this.npcs = []; this.cars = [];
+    this.prepareTextures();
+    this.stop();
     console.log('World init - canvas size:', canvasEl.width, 'x', canvasEl.height);
     this.generateWorld();
     this.bindKeys();
@@ -94,6 +96,8 @@ const World = {
   },
 
   bindKeys() {
+    if (this.hasBoundKeys) return;
+    this.hasBoundKeys = true;
     window.addEventListener('keydown', e => {
       this.keys[e.key] = true;
       if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
@@ -103,7 +107,8 @@ const World = {
   },
 
   bindClick() {
-    if (!this.canvas) return;
+    if (this.hasBoundClick || !this.canvas) return;
+    this.hasBoundClick = true;
     this.canvas.addEventListener('click', (e) => {
       const rect = this.canvas.getBoundingClientRect();
       const scaleX = this.canvas.width / rect.width;
@@ -113,6 +118,56 @@ const World = {
       const wx = (e.clientX - rect.left) * scaleX - offsetX + this.cam.x;
       const wy = (e.clientY - rect.top)  * scaleY - offsetY + this.cam.y;
       this.tryInteractAt(wx, wy);
+    });
+  },
+
+  createPattern(size, drawFn) {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    drawFn(ctx, size);
+    return this.ctx.createPattern(canvas, 'repeat');
+  },
+
+  prepareTextures() {
+    if (this.textures.grass) return;
+    this.textures.grass = this.createPattern(32, (ctx, S) => {
+      ctx.fillStyle = '#5a9e3a';
+      ctx.fillRect(0, 0, S, S);
+      ctx.fillStyle = '#63b34e';
+      ctx.fillRect(0, 0, 8, 8);
+      ctx.fillRect(16, 16, 8, 8);
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.fillRect(8, 8, 4, 4);
+      ctx.fillRect(20, 20, 4, 4);
+    });
+    this.textures.dirt = this.createPattern(24, (ctx, S) => {
+      ctx.fillStyle = '#ab8a63';
+      ctx.fillRect(0, 0, S, S);
+      ctx.fillStyle = '#8f6f48';
+      for (let i = 0; i < 8; i++) {
+        const x = Math.random() * S;
+        const y = Math.random() * S;
+        ctx.fillRect(x, y, 2, 2);
+      }
+    });
+    this.textures.road = this.createPattern(32, (ctx, S) => {
+      ctx.fillStyle = '#7d7d7d';
+      ctx.fillRect(0, 0, S, S);
+      ctx.strokeStyle = '#9d9d9d';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, S * 0.55);
+      ctx.lineTo(S, S * 0.55);
+      ctx.stroke();
+      ctx.strokeStyle = '#d1d1d1';
+      ctx.setLineDash([8, 8]);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, S * 0.5);
+      ctx.lineTo(S, S * 0.5);
+      ctx.stroke();
+      ctx.setLineDash([]);
     });
   },
 
@@ -316,25 +371,33 @@ const World = {
 
   drawGround() {
     const ctx=this.ctx, W=this.MAP_W, H=this.MAP_H;
-    ctx.fillStyle='#5a9e3a'; ctx.fillRect(0,0,W,H);
-    const S=16;
-    for(let x=0;x<W;x+=S) for(let y=0;y<H;y+=S){
-      const h=(x*7+y*13)%5;
-      if(h===0){ctx.fillStyle='#4a8a2e';ctx.fillRect(x,y,S,S);}
-      if(h===1){ctx.fillStyle='#6ab04c';ctx.fillRect(x,y,S,S);}
+    ctx.fillStyle = this.textures.grass || '#5a9e3a';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    for (let x = 0; x < W; x += 20) {
+      for (let y = 0; y < H; y += 20) {
+        ctx.fillRect(x + 2, y + 10, 1, 4);
+      }
+    }
+    const S = 12;
+    for (let x = 0; x < W; x += S * 3) {
+      for (let y = 0; y < H; y += S * 3) {
+        ctx.fillStyle = 'rgba(74, 146, 58, 0.1)';
+        ctx.fillRect(x + 3, y + 6, 8, 8);
+      }
     }
     // Main road horizontal
-    ctx.fillStyle='#888'; ctx.fillRect(0,320,W,50);
-    ctx.fillStyle='#bbb'; ctx.fillRect(0,316,W,5); ctx.fillRect(0,368,W,5);
-    ctx.fillStyle='#777';
-    for(let x=0;x<W;x+=40) ctx.fillRect(x,343,20,4);
+    ctx.fillStyle = this.textures.road || '#888'; ctx.fillRect(0,320,W,50);
+    ctx.fillStyle = '#bbb'; ctx.fillRect(0,316,W,5); ctx.fillRect(0,368,W,5);
+    ctx.fillStyle = '#777';
+    for(let x=0; x<W; x+=40) ctx.fillRect(x,343,20,4);
     // Vertical road (city side)
-    ctx.fillStyle='#888'; ctx.fillRect(540,0,50,H);
-    ctx.fillStyle='#bbb'; ctx.fillRect(536,0,5,H); ctx.fillRect(588,0,5,H);
-    ctx.fillStyle='#777';
-    for(let y=0;y<H;y+=40) ctx.fillRect(563,y,4,20);
+    ctx.fillStyle = this.textures.road || '#888'; ctx.fillRect(540,0,50,H);
+    ctx.fillStyle = '#bbb'; ctx.fillRect(536,0,5,H); ctx.fillRect(588,0,5,H);
+    ctx.fillStyle = '#777';
+    for(let y=0; y<H; y+=40) ctx.fillRect(563,y,4,20);
     // Dirt path to corral
-    ctx.fillStyle='#c8a46e'; ctx.fillRect(315,0,30,320);
+    ctx.fillStyle = this.textures.dirt || '#c8a46e'; ctx.fillRect(315,0,30,320);
     // Pond
     ctx.fillStyle='#4a90d9'; ctx.fillRect(360,400,65,50);
     ctx.fillStyle='#5aa0e9'; ctx.fillRect(364,404,30,16);

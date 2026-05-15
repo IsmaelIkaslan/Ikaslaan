@@ -5,45 +5,52 @@ const Game = {
   gameCtx: null,
   animFrame: null,
   time: 0,
+  resizeListenerAdded: false,
+  buttonsInitialized: false,
 
   async start(username) {
     document.getElementById('player-name').textContent = username;
     showScreen('game');
 
-    // Load state
-    await this.loadState();
+    try {
+      await this.loadState();
+    } catch (err) {
+      Toast.show('No se pudo cargar el estado de juego: ' + err.message, 'error');
+      return;
+    }
 
-    // Init world map — use setTimeout to ensure flex layout is fully calculated
     const worldCanvas = document.getElementById('world-canvas');
-    setTimeout(() => {
-      const parent = worldCanvas.parentElement;
-      worldCanvas.width  = parent.clientWidth  || window.innerWidth;
-      worldCanvas.height = parent.clientHeight || (window.innerHeight - 100);
-      if (worldCanvas.width < 100) worldCanvas.width = window.innerWidth;
-      if (worldCanvas.height < 100) worldCanvas.height = window.innerHeight - 100;
-      World.init(worldCanvas, username);
-    }, 100);
+    const parent = worldCanvas.parentElement;
+    worldCanvas.width  = parent?.clientWidth  || window.innerWidth;
+    worldCanvas.height = parent?.clientHeight || (window.innerHeight - 100);
+    if (worldCanvas.width < 100) worldCanvas.width = window.innerWidth;
+    if (worldCanvas.height < 100) worldCanvas.height = window.innerHeight - 100;
 
-    // Resize world canvas on window resize
-    window.addEventListener('resize', () => {
-      worldCanvas.width  = worldCanvas.offsetWidth;
-      worldCanvas.height = worldCanvas.offsetHeight;
-    });
+    if (World.animId) World.stop();
+    World.init(worldCanvas, username);
 
-    // Back to world button
-    document.getElementById('btn-back-world').addEventListener('click', () => {
-      document.getElementById('world-overlay').classList.remove('hidden');
-      document.getElementById('sections-container').classList.add('hidden');
-    });
-
-    // Nav buttons (inside sections)
-    document.querySelectorAll('.nav-btn[data-section]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        Game.showSection(btn.dataset.section);
+    if (!this.resizeListenerAdded) {
+      this.resizeListenerAdded = true;
+      window.addEventListener('resize', () => {
+        worldCanvas.width  = worldCanvas.offsetWidth;
+        worldCanvas.height = worldCanvas.offsetHeight;
       });
-    });
+    }
 
-    // Init sections
+    if (!this.buttonsInitialized) {
+      this.buttonsInitialized = true;
+      document.getElementById('btn-back-world').addEventListener('click', () => {
+        document.getElementById('world-overlay').classList.remove('hidden');
+        document.getElementById('sections-container').classList.add('hidden');
+      });
+
+      document.querySelectorAll('.nav-btn[data-section]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          Game.showSection(btn.dataset.section);
+        });
+      });
+    }
+
     Corral.render();
     Shop.init();
   },
@@ -55,6 +62,7 @@ const Game = {
 
   async loadState() {
     const data = await API.get('/api/game/state');
+    if (!data || data.error) throw new Error(data?.error || 'No se pudo obtener el estado del juego');
     this.state = data;
     this.updateHUD();
     return data;

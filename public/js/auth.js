@@ -25,17 +25,17 @@ const Auth = {
       if (!username || !password) { errorEl.textContent = 'Rellena todos los campos'; return; }
 
       const btn = e.target.querySelector('button[type="submit"]');
-      btn.textContent = '¡Entrar a la granja!';
+      const originalText = btn.textContent;
       btn.disabled = true;
-      btn.textContent = 'Entrando...';
+      btn.textContent = 'Accediendo...';
 
       try {
         const res = await Promise.race([
           API.post('/api/auth/login', { username, password }),
           new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
         ]);
+        if (!res || typeof res !== 'object') throw new Error('Respuesta inválida del servidor');
         if (res.error) {
-          // Si el usuario no existe, sugerir registro
           if (res.error.includes('incorrectos') || res.error.includes('no encontrado')) {
             errorEl.textContent = '❌ ' + res.error + ' — ¿Ya tienes cuenta? Si no, regístrate primero.';
           } else {
@@ -48,9 +48,9 @@ const Auth = {
       } catch (err) {
         errorEl.textContent = err.message === 'timeout'
           ? '⏱️ El servidor tardó demasiado. Inténtalo de nuevo.'
-          : '❌ Error de conexión. Inténtalo de nuevo.';
+          : '❌ ' + (err.message || 'Error de conexión. Inténtalo de nuevo.');
       } finally {
-        btn.textContent = '¡Entrar a la granja!';
+        btn.textContent = originalText;
         btn.disabled = false;
       }
     });
@@ -66,6 +66,7 @@ const Auth = {
       if (!username || !password) { errorEl.textContent = 'Rellena todos los campos'; return; }
 
       const btn = e.target.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
       btn.disabled = true;
       btn.textContent = 'Creando granja...';
 
@@ -74,6 +75,7 @@ const Auth = {
           API.post('/api/auth/register', { username, password }),
           new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
         ]);
+        if (!res || typeof res !== 'object') throw new Error('Respuesta inválida del servidor');
         if (res.error) {
           errorEl.textContent = res.error;
         } else {
@@ -82,10 +84,10 @@ const Auth = {
         }
       } catch (err) {
         errorEl.textContent = err.message === 'timeout'
-          ? 'El servidor tardó demasiado. Inténtalo de nuevo.'
-          : 'Error de conexión. Inténtalo de nuevo.';
+          ? '⏱️ El servidor tardó demasiado. Inténtalo de nuevo.'
+          : '❌ ' + (err.message || 'Error de conexión. Inténtalo de nuevo.');
       } finally {
-        btn.textContent = '¡Crear mi granja!';
+        btn.textContent = originalText;
         btn.disabled = false;
       }
     });

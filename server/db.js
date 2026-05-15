@@ -22,21 +22,82 @@ const gameStateSchema = new mongoose.Schema({
 const User      = mongoose.model('User',      userSchema);
 const GameState = mongoose.model('GameState', gameStateSchema);
 
+let useInMemory = false;
+const inMemoryData = {
+  users: [],
+  gameStates: []
+};
+
 async function initDB() {
   try {
     await mongoose.connect(MONGO_URI);
+    useInMemory = false;
     console.log('✅ MongoDB conectado');
   } catch (err) {
-    console.error('⚠️ MongoDB no disponible, usando JSON local:', err.message);
-    // No hacer process.exit — el servidor sigue funcionando con JSON fallback
+    useInMemory = true;
+    console.error('⚠️ MongoDB no disponible, usando almacenamiento local en memoria:', err.message);
   }
 }
 
-async function dbFindOne(Model, query)       { return Model.findOne(query).lean(); }
-async function dbInsert(Model, doc)          { return Model.create(doc); }
-async function dbUpdate(Model, query, upd)   { return Model.updateOne(query, upd); }
+function getCollection(modelName) {
+  if (modelName === 'User') return inMemoryData.users;
+  if (modelName === 'GameState') return inMemoryData.gameStates;
+  throw new Error(`Modelo desconocido para fallback: ${modelName}`);
+}
+
+function matchQuery(doc, query) {
+  return Object.entries(query).every(([key, value]) => {
+    if (doc[key] == null) return false;
+    return String(doc[key]) === String(value);
+  });
+}
+
+function ensureId(doc) {
+  if (!doc._id) doc._id = new mongoose.Types.ObjectId();
+  return doc;
+}
+
+async function dbFindOne(Model, query) {
+  if (!useInMemory) return Model.findOne(query).lean();
+  const collection = getCollection(Model.modelName);
+  const result = collection.find(doc => matchQuery(doc, query));
+  return result ? { ...result } : null;
+}
+
+async function dbInsert(Model, doc) {
+  if (!useInMemory) return Model.create(doc);
+  const collection = getCollection(Model.modelName);
+  if (Model.modelName === 'User' && collection.some(item => item.username === doc.username)) {
+    const err = new Error('duplicate key'); err.code = 11000; throw err;
+  }
+  if (Model.modelName === 'GameState' && collection.some(item => String(item.userId) === String(doc.userId))) {
+    const err = new Error('duplicate key'); err.code = 11000; throw err;
+  }
+  const newDoc = ensureId({ ...doc, updatedAt: new Date() });
+  collection.push(newDoc);
+  return { ...newDoc };
+}
+
+async function dbUpdate(Model, query, upd) {
+  if (!useInMemory) return Model.updateOne(query, upd);
+  const collection = getCollection(Model.modelName);
+  const index = collection.findIndex(doc => matchQuery(doc, query));
+  if (index === -1) return { matchedCount: 0, modifiedCount: 0 };
+  collection[index] = { ...collection[index], ...upd, updatedAt: new Date() };
+  return { matchedCount: 1, modifiedCount: 1 };
+}
+
 async function dbFindSorted(Model, query, sort, limit) {
-  return Model.find(query).sort(sort).limit(limit).lean();
+  if (!useInMemory) return Model.find(query).sort(sort).limit(limit).lean();
+  const collection = getCollection(Model.modelName).filter(doc => matchQuery(doc, query));
+  const [sortKey, sortOrder] = Object.entries(sort)[0] || [];
+  const sorted = collection.slice().sort((a, b) => {
+    const aValue = a[sortKey];
+    const bValue = b[sortKey];
+    if (aValue === bValue) return 0;
+    return (aValue > bValue ? 1 : -1) * (sortOrder === -1 ? -1 : 1);
+  });
+  return sorted.slice(0, limit).map(item => ({ ...item }));
 }
 
 module.exports = { User, GameState, dbFindOne, dbInsert, dbUpdate, dbFindSorted, initDB };

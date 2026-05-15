@@ -108,8 +108,10 @@ const World = {
       const rect = this.canvas.getBoundingClientRect();
       const scaleX = this.canvas.width / rect.width;
       const scaleY = this.canvas.height / rect.height;
-      const wx = (e.clientX - rect.left) * scaleX + this.cam.x;
-      const wy = (e.clientY - rect.top)  * scaleY + this.cam.y;
+      const offsetX = Math.max(0, (this.canvas.width - this.MAP_W) / 2);
+      const offsetY = Math.max(0, (this.canvas.height - this.MAP_H) / 2);
+      const wx = (e.clientX - rect.left) * scaleX - offsetX + this.cam.x;
+      const wy = (e.clientY - rect.top)  * scaleY - offsetY + this.cam.y;
       this.tryInteractAt(wx, wy);
     });
   },
@@ -255,10 +257,12 @@ const World = {
 
   draw() {
     const ctx = this.ctx, W = this.canvas.width, H = this.canvas.height;
+    const offsetX = Math.max(0, (W - this.MAP_W) / 2);
+    const offsetY = Math.max(0, (H - this.MAP_H) / 2);
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0,0,W,H);
     ctx.save();
-    ctx.translate(-this.cam.x, -this.cam.y);
+    ctx.translate(offsetX - this.cam.x, offsetY - this.cam.y);
     this.drawGround();
     this.drawZones();
     this.drawDecorations();

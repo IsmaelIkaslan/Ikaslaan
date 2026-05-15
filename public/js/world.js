@@ -5,6 +5,7 @@ const World = {
   cam: { x: 0, y: 0 },
   MAP_W: 900, MAP_H: 700,
   keys: {},
+  textures: {},
   caughtPig: null,
   notification: null, notifTimer: 0,
   trees: [], flowers: [], pigs: [], npcs: [], cars: [],
@@ -130,6 +131,7 @@ const World = {
   },
 
   prepareTextures() {
+    if (!this.textures) this.textures = {};
     if (this.textures.grass) return;
     this.textures.grass = this.createPattern(32, (ctx, S) => {
       ctx.fillStyle = '#5a9e3a';
